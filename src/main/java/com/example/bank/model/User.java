@@ -37,7 +37,7 @@ public class User {
     private String role;
 
     @Column(nullable = false)
-    private long balance;
+    private double balance;
 
     @Column(name = "bank_id", nullable = false)
     private String bankId;
