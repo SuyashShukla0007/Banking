@@ -1,10 +1,6 @@
 package com.example.bank.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,12 +16,27 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "account_type", nullable = false)
+    @Column(nullable = false, unique = true)
+    private String accountNumber;
+
+    @Column(nullable = false)
     private String accountType;
 
-    @Column(nullable = false)
-    private double interestRate;
+//    @Column(nullable = false)
+//    private double interestRate;
 
     @Column(nullable = false)
-    private long balance;
+    private double balance;
+
+    @Column(nullable = false)
+    private long last4AccountNumber;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "branch_id", nullable = false)
+    private BankBranch branch;
 }
+

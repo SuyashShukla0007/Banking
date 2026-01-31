@@ -1,39 +1,62 @@
 package com.example.bank.services;
 
-import com.example.bank.repo.UserRepo;
+import com.example.bank.DTO.User.UserRegisterRequest;
+import com.example.bank.repo.userRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.bank.model.User;
 
 @Service
 public class UserService {
 
-    UserRepo userRepo;
+    userRepository userRepository;
 
-//create user service methods
-    public  void createUser(User user) {
-    userRepo.save(user);
+    public UserService(userRepository userRepository) {
+        this.userRepository = userRepository;
     }
+
+
+
+    //create user service methods
+    public User createUser(UserRegisterRequest request) {
+
+        // checking if email already exists
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already registered");
+        }
+
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        //further improvement on later stages
+        user.setPassword(request.getPassword());
+        user.setRole("USER");
+
+        return userRepository.save(user);
+    }
+
+
+
+
     //delete user by id
     public void deleteUser(Long id) {
-        userRepo.deleteById(id);
+        userRepository.deleteById(id);
     }
 
     //get user by id
     public User getUserById(Long id) {
-        return userRepo.findById(id).orElse(null);
+        return userRepository.findById(id).orElse(null);
     }
 
-    //get ballance by id
-    public Double getBalanceById(Long id) {
-        User user = userRepo.findById(id).orElse(null);
-        if (user != null) {
-            return user.getBalance();
+    //login
+    public Long login(String password,String email)
+    {
+        User user= userRepository.findByEmail(email) .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+
+        if (!user.getPassword().equals(password)) {
+            throw new RuntimeException("Invalid credentials");
         }
-        return null;
+        return user.getId();
     }
-
-
-
-
 
 }
