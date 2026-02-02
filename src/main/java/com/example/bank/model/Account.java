@@ -22,8 +22,8 @@ public class Account {
     @Column(nullable = false)
     private String accountType;
 
-//    @Column(nullable = false)
-//    private double interestRate;
+    // @Column(nullable = false)
+    // private double interestRate;
 
     @Column(nullable = false)
     private double balance;
@@ -35,8 +35,10 @@ public class Account {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(nullable = false)
+    private String status;
+
     @ManyToOne
     @JoinColumn(name = "branch_id", nullable = false)
     private BankBranch branch;
 }
-

@@ -7,7 +7,7 @@ import lombok.Getter;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
@@ -16,42 +16,40 @@ public class UserController {
         this.userService = userService;
     }
 
-// create user
+    // testing
+    @GetMapping("/")
+    public String test() {
+        return "hello";
+    }
+
+    // create user
     @PostMapping("/create")
-    public String createUser(@RequestBody UserRegisterRequest request)
-    {
-        try
-        {
+    public String createUser(@RequestBody UserRegisterRequest request) {
+        try {
             userService.createUser(request);
             return "Successfull";
-        }
-        catch (RuntimeException e)
-        {
-            throw new RuntimeException("user email already exists " +e);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("user email already exists " + e);
         }
     }
 
-    //login user
+    // login user
 
     @PostMapping("/login")
 
-    public String  userLogin(@RequestBody UserLoginRequest request)
-    {
-        try{
+    public String userLogin(@RequestBody UserLoginRequest request) {
+        try {
             userService.login(request.getEmail(), request.getPassword());
             return "Login successful";
-        }
-        catch (RuntimeException e)
-        {
-            throw new RuntimeException("check credentials " +e);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("check credentials " + e);
         }
 
     }
 
     @GetMapping("/delete-user/{id}")
-    public String delete(@PathVariable Long id)
-    {
-        try{
+    public String delete(@PathVariable Long id) {
+        try {
             userService.deleteUser(id);
             return "user deleted successfully";
 
@@ -60,8 +58,6 @@ public class UserController {
         }
     }
 
-//    @GetMapping("/getDetails")
-
-
+    // @GetMapping("/getDetails")
 
 }

@@ -1,6 +1,5 @@
 package com.example.bank.config;
 
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,23 +9,22 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 
 import java.net.http.HttpRequest;
 
-
 @Configuration
 @EnableWebSecurity
- class ConfigConfiguration {
+class ConfigConfiguration {
 
+        @Bean
+        SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-    @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws  Exception {
+                http
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers("/**", "/h2-console/**").permitAll()
+                                                .anyRequest().authenticated())
+                                .csrf(csrf -> csrf.disable())
+                                .headers(headers -> headers.frameOptions().disable());
 
-        http.csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(a -> a.anyRequest().permitAll())
-                .formLogin(f -> f.disable())
-                .httpBasic(b -> b.disable());
-        return http.build();
+                return http.build();
 
+        }
 
-    }
-    
 }
-
