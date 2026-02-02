@@ -1,80 +1,48 @@
 package com.example.bank.services;
 
 import com.example.bank.DTO.Account.AccountCreation;
-import com.example.bank.DTO.Account.AccountNonSensitive;
 import com.example.bank.model.Account;
-import com.example.bank.model.User;
-import com.example.bank.repo.AccountRepo;
-import com.example.bank.repo.userRepository;
-import com.example.bank.utility.GenerateAccountNumber;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.bank.services.account.AccountCreationService;
+import com.example.bank.services.account.AccountQueryService;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 
+/**
+ * Facade service that delegates to specific account services
+ * This maintains backward compatibility while following SRP
+ */
 @Service
 public class AccountService {
 
+    private final AccountCreationService accountCreationService;
+    private final AccountQueryService accountQueryService;
 
-    private final AccountRepo accountRepo;
-    private final userRepository userRepository;
-
-    public AccountService(AccountRepo accountRepo,
-                          userRepository userRepository) {
-        this.accountRepo = accountRepo;
-        this.userRepository = userRepository;
+    public AccountService(
+            AccountCreationService accountCreationService,
+            AccountQueryService accountQueryService) {
+        this.accountCreationService = accountCreationService;
+        this.accountQueryService = accountQueryService;
     }
 
-    public Account createAccount(AccountCreation accountCreation, Long userID)
-    {
-        //fetch user from db
-        User user=userRepository.findById(userID)
-                .orElseThrow(()->new RuntimeException("User not found"));
-
-        //Account number creation logic
-            String accountNumber= new GenerateAccountNumber().generate();
-
-
-
-
-        // create new account object
-        Account account=new Account();
-        account.setAccountType(accountCreation.getAccountType());
-        account.setBalance(0.0);
-        account.setAccountNumber(accountNumber);
-        account.setUser(user);
-
-        return accountRepo.save(account);
-
+    /**
+     * Create a new account
+     * 
+     * @param accountCreation Account creation details
+     * @param userID          User ID
+     * @return Created Account entity
+     */
+    public Account createAccount(AccountCreation accountCreation, Long userID) {
+        return accountCreationService.createAccount(accountCreation, userID);
     }
 
-
-
-
-    //get allAccounts ids for the signed in user
-    public List<Long> getAccounts(Long userID)
-    {
-        List<Account> accounts=accountRepo.findByUserId(userID);
-        return accounts.stream()
-                                .map(Account::getId)
-                                                    .toList();
-
+    /**
+     * Get all accounts for a user
+     * 
+     * @param userID User ID
+     * @return List of account IDs
+     */
+    public List<Long> getAccounts(Long userID) {
+        return accountQueryService.getAccountsByUserId(userID);
     }
-
-
-
-
-
-    // get non sensitive data for the account
-
-
-
-
-    //get sensitive data for the account
-
-
-
-
-
 }

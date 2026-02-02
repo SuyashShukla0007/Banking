@@ -1,62 +1,74 @@
 package com.example.bank.services;
 
 import com.example.bank.DTO.User.UserRegisterRequest;
-import com.example.bank.repo.userRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCrypt;
-import org.springframework.stereotype.Service;
+import com.example.bank.model.NewUserApproval;
 import com.example.bank.model.User;
+import com.example.bank.services.user.UserAuthenticationService;
+import com.example.bank.services.user.UserManagementService;
+import com.example.bank.services.user.UserQueryService;
+import com.example.bank.services.user.UserRegistrationService;
+import org.springframework.stereotype.Service;
 
+/**
+ * Facade service that delegates to specific user services
+ * This maintains backward compatibility while following SRP
+ */
 @Service
 public class UserService {
 
-    userRepository userRepository;
+    private final UserRegistrationService userRegistrationService;
+    private final UserAuthenticationService userAuthenticationService;
+    private final UserManagementService userManagementService;
+    private final UserQueryService userQueryService;
 
-    public UserService(userRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserService(
+            UserRegistrationService userRegistrationService,
+            UserAuthenticationService userAuthenticationService,
+            UserManagementService userManagementService,
+            UserQueryService userQueryService) {
+        this.userRegistrationService = userRegistrationService;
+        this.userAuthenticationService = userAuthenticationService;
+        this.userManagementService = userManagementService;
+        this.userQueryService = userQueryService;
     }
 
-    // create user service methods
-    public User createUser(UserRegisterRequest request) {
-
-        // checking if email already exists
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already registered");
-        }
-
-        User user = new User();
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        // hash password using bCrypt
-
-        String rawPassword = request.getPassword();
-        String hashPassword = BCrypt.hashpw(rawPassword, BCrypt.gensalt());
-
-        // further improvement on later stages
-        user.setPassword(hashPassword);
-        user.setRole("USER");
-
-        return userRepository.save(user);
+    /**
+     * Create a new user
+     * 
+     * @param request User registration details
+     * @return NewUserApproval entity
+     */
+    public NewUserApproval createUser(UserRegisterRequest request) {
+        return userRegistrationService.createUser(request);
     }
 
-    // delete user by id
+    /**
+     * Authenticate user
+     * 
+     * @param email    User email
+     * @param password User password
+     * @return User ID if authentication successful
+     */
+    public Long login(String email, String password) {
+        return userAuthenticationService.login(email, password);
+    }
+
+    /**
+     * Delete user by ID
+     * 
+     * @param id User ID
+     */
     public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+        userManagementService.deleteUser(id);
     }
 
-    // get user by id
+    /**
+     * Get user by ID
+     * 
+     * @param id User ID
+     * @return User entity or null
+     */
     public User getUserById(Long id) {
-        return userRepository.findById(id).orElse(null);
+        return userQueryService.getUserById(id);
     }
-
-    // login
-    public Long login(String password, String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Invalid credentials"));
-
-        if (!user.getPassword().equals(password)) {
-            throw new RuntimeException("Invalid credentials");
-        }
-        return user.getId();
-    }
-
 }
