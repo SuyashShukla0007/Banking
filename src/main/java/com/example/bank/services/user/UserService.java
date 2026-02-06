@@ -32,12 +32,6 @@ public class UserService {
         this.userQueryService = userQueryService;
     }
 
-    /**
-     * Create a new user
-     * 
-     * @param request User registration details
-     * @return NewUserApproval entity
-     */
     public NewUserApproval createUser(UserRegisterRequest request) {
         return userRegistrationService.createUser(request);
     }
@@ -71,4 +65,24 @@ public class UserService {
     public User getUserById(Long id) {
         return userQueryService.getUserById(id);
     }
+
+    // Method: updateUserProfile(Long userId, String name, String email)
+    // - Find user by ID
+    // - Validate email is not already taken by another user
+    // - Update name and email if provided
+    // - Save and return updated user
+
+    // Method: changePassword(Long userId, String oldPassword, String newPassword)
+    // - Find user by ID
+    // - Verify old password matches
+    // - Encode new password
+    // - Update user password
+    // - Save user
+
+    // Method: deactivateAccount(Long userId)
+    // - Find user by ID
+    // - Update user status to "DEACTIVATED"
+    // - Mark all user accounts as inactive
+    // - Save changes
+
 }

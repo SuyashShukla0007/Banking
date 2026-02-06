@@ -5,26 +5,30 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.server.SecurityWebFilterChain;
-
-import java.net.http.HttpRequest;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @EnableWebSecurity
 class ConfigConfiguration {
 
-        @Bean
-        SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-                http
-                                .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers("/**", "/h2-console/**").permitAll()
-                                                .anyRequest().authenticated())
-                                .csrf(csrf -> csrf.disable())
-                                .headers(headers -> headers.frameOptions().disable());
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-                return http.build();
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/**", "/h2-console/**").permitAll()
+                        .anyRequest().authenticated())
+                .csrf(csrf -> csrf.disable())
+                .headers(headers -> headers.frameOptions().disable());
 
-        }
+        return http.build();
+
+    }
 
 }

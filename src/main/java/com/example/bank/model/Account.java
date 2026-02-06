@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -41,4 +43,7 @@ public class Account {
     @ManyToOne
     @JoinColumn(name = "branch_id", nullable = false)
     private BankBranch branch;
+
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
+    private List<Transaction> transactions;
 }

@@ -29,7 +29,7 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private String role;
+    private String role = "USER";
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Account> accounts;
