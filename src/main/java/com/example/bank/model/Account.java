@@ -42,7 +42,7 @@ public class Account {
 
     @ManyToOne
     @JoinColumn(name = "branch_id", nullable = false)
-    private BankBranch branch;
+    private Long branch;
 
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
     private List<Transaction> transactions;

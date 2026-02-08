@@ -19,9 +19,15 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "account_id", nullable = false)
-    private Account account;
+    // Source account (for WITHDRAWAL and TRANSFER; null for DEPOSIT)
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "from_account_id", nullable = true)
+    private Account fromAccount;
+
+    // Destination account (for DEPOSIT and TRANSFER; null for WITHDRAWAL)
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "to_account_id", nullable = true)
+    private Account toAccount;
 
     @Column(nullable = false)
     private String type; // DEPOSIT, WITHDRAWAL, TRANSFER
@@ -36,4 +42,17 @@ public class Transaction {
 
     @Column
     private String referenceNumber;
+
+    @Column
+    private String statement;
+
+    // Constructor for creating transactions
+    public Transaction(Account fromAccount, Account toAccount, Double amount, String type) {
+        this.fromAccount = fromAccount;
+        this.toAccount = toAccount;
+        this.amount = BigDecimal.valueOf(amount);
+        this.type = type;
+        this.timestamp = LocalDateTime.now();
+    }
+
 }

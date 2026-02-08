@@ -1,4 +1,4 @@
-package com.example.bank.services;
+package com.example.bank.services.admin;
 
 import org.springframework.stereotype.Service;
 

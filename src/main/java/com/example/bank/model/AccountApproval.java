@@ -32,4 +32,9 @@ public class AccountApproval {
 
     private LocalDateTime reviewedAt;
 
+    private Long branchId;
+
+    //rejection reason
+    private String rejectionReason;
+
 }

@@ -1,12 +1,9 @@
-package com.example.bank.services;
+package com.example.bank.services.user;
 
 import com.example.bank.DTO.User.UserRegisterRequest;
 import com.example.bank.model.NewUserApproval;
 import com.example.bank.model.User;
-import com.example.bank.services.user.UserAuthenticationService;
-import com.example.bank.services.user.UserManagementService;
-import com.example.bank.services.user.UserQueryService;
-import com.example.bank.services.user.UserRegistrationService;
+
 import org.springframework.stereotype.Service;
 
 /**

@@ -25,7 +25,10 @@ public class BankBranch {
     private String branchCode;
 
     @Column(nullable = false)
-    private String address;
+    private String city;
+
+    @Column(nullable = false)
+    private String state;
 
     @OneToMany(mappedBy = "branch")
     private List<Account> accounts;
