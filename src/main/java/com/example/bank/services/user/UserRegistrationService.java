@@ -3,7 +3,7 @@ package com.example.bank.services.user;
 import com.example.bank.DTO.User.UserRegisterRequest;
 import com.example.bank.model.NewUserApproval;
 import com.example.bank.repo.NewUsers;
-import com.example.bank.repo.userRepository;
+import com.example.bank.repo.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
@@ -13,10 +13,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserRegistrationService {
 
-    private final userRepository userRepository;
+    private final UserRepository userRepository;
     private final NewUsers newUsersRepo;
 
-    public UserRegistrationService(userRepository userRepository, NewUsers newUsersRepo) {
+    public UserRegistrationService(UserRepository userRepository, NewUsers newUsersRepo) {
         this.userRepository = userRepository;
         this.newUsersRepo = newUsersRepo;
     }

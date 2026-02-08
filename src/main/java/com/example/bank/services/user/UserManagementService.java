@@ -1,6 +1,6 @@
 package com.example.bank.services.user;
 
-import com.example.bank.repo.userRepository;
+import com.example.bank.repo.UserRepository;
 import org.springframework.stereotype.Service;
 
 /**
@@ -9,9 +9,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserManagementService {
 
-    private final userRepository userRepository;
+    private final UserRepository userRepository;
 
-    public UserManagementService(userRepository userRepository) {
+    public UserManagementService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 

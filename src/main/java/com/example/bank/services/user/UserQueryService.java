@@ -1,7 +1,7 @@
 package com.example.bank.services.user;
 
 import com.example.bank.model.User;
-import com.example.bank.repo.userRepository;
+import com.example.bank.repo.UserRepository;
 import org.springframework.stereotype.Service;
 
 /**
@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserQueryService {
 
-    private final userRepository userRepository;
+    private final UserRepository userRepository;
 
-    public UserQueryService(userRepository userRepository) {
+    public UserQueryService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
