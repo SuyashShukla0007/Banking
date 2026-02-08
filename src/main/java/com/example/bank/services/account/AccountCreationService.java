@@ -4,7 +4,7 @@ import com.example.bank.DTO.Account.AccountCreation;
 import com.example.bank.model.Account;
 import com.example.bank.model.User;
 import com.example.bank.repo.AccountRepo;
-import com.example.bank.repo.userRepository;
+import com.example.bank.repo.UserRepository;
 import com.example.bank.utility.GenerateAccountNumber;
 import org.springframework.stereotype.Service;
 
@@ -15,17 +15,18 @@ import org.springframework.stereotype.Service;
 public class AccountCreationService {
 
     private final AccountRepo accountRepo;
-    private final userRepository userRepository;
+    private final UserRepository userRepository;
 
-    public AccountCreationService(AccountRepo accountRepo, userRepository userRepository) {
+    public AccountCreationService(AccountRepo accountRepo, UserRepository userRepository) {
         this.accountRepo = accountRepo;
         this.userRepository = userRepository;
     }
 
     /**
      * Create a new account for a user
+     * 
      * @param accountCreation Account creation details
-     * @param userId User ID
+     * @param userId          User ID
      * @return Created Account entity
      * @throws RuntimeException if user not found
      */
@@ -43,6 +44,16 @@ public class AccountCreationService {
         account.setBalance(0.0);
         account.setAccountNumber(accountNumber);
         account.setUser(user);
+        account.setStatus("ACTIVE");
+
+        // Extract last 4 digits of account number
+        if (accountNumber.length() >= 4) {
+            account.setLast4AccountNumber(
+                    Long.parseLong(accountNumber.substring(accountNumber.length() - 4)));
+        }
+
+        // TODO: Set branch from accountCreation or default branch
+        // account.setBranch(branchId);
 
         return accountRepo.save(account);
     }
