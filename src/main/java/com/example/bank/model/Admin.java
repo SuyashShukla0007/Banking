@@ -5,10 +5,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 // The `class Admin` is defining a class named `Admin` in the `com.example.bank.model` package.
 // This class does not have any content or functionality defined within it yet.
 @Entity
+@Getter
+@Setter
 @Table(name = "admins")
 public class Admin {
     @Id

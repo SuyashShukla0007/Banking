@@ -15,6 +15,7 @@ import com.example.bank.repo.AccountRepo;
 import com.example.bank.repo.UserRepository;
 
 @Service
+
 public class AccountApprovalService {
 
     private final AccountApprovals accountApprovals;
@@ -111,7 +112,6 @@ public class AccountApprovalService {
         newAccount.setAccountType(approval.getAccountType());
         newAccount.setBalance(0);
         newAccount.setStatus("ACTIVE");
-        newAccount.setBranch(approval.getBranchId());
         newAccount.setUser(approval.getUser());
 
         if (accountNumber.length() >= 4) {

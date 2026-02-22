@@ -30,6 +30,9 @@ public class BankBranch {
     @Column(nullable = false)
     private String state;
 
+    @Column(nullable = false)
+    private String address;
+
     @OneToMany(mappedBy = "branch")
     private List<Account> accounts;
 }

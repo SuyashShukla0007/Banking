@@ -1,0 +1,984 @@
+{
+	"info": {
+		"_postman_id": "bank-api-v1-complete",
+		"name": "Bank Application API - V1 Complete",
+		"description": "Complete API collection for Bank Application V1 with all available endpoints based on services",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "User Management",
+			"description": "User registration, authentication, and management operations",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", ""]
+						},
+						"description": "Test endpoint to verify the API is running"
+					}
+				},
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\",\n  \"phone\": \"1234567890\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/create",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "create"]
+						},
+						"description": "Register a new user - creates NewUserApproval entry"
+					}
+				},
+				{
+					"name": "Login User",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "login"]
+						},
+						"description": "Authenticate user credentials and login (returns user ID)"
+					}
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/delete-user/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "delete-user", "{{userId}}"]
+						},
+						"description": "Delete a user by ID"
+					}
+				}
+			]
+		},
+		{
+			"name": "Account Management",
+			"description": "Account creation, query, and status management",
+			"item": [
+				{
+					"name": "Create Account",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountType\": \"SAVINGS\",\n  \"branchName\": \"Main Branch\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/accounts/create/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["accounts", "create", "{{userId}}"]
+						},
+						"description": "Create a new bank account for a user (SAVINGS/CHECKING/BUSINESS)"
+					}
+				},
+				{
+					"name": "Get User Accounts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/accounts/user/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["accounts", "user", "{{userId}}"]
+						},
+						"description": "Get all account IDs for a specific user"
+					}
+				}
+			]
+		},
+		{
+			"name": "Transaction Operations",
+			"description": "Deposit, withdraw, transfer, and transaction history",
+			"item": [
+				{
+					"name": "Deposit Money",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountId\": {{accountId}},\n  \"amount\": 5000.00\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/transactions/deposit",
+							"host": ["{{baseUrl}}"],
+							"path": ["transactions", "deposit"]
+						},
+						"description": "Deposit money into an account"
+					}
+				},
+				{
+					"name": "Withdraw Money",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountId\": {{accountId}},\n  \"amount\": 1000.00\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/transactions/withdraw",
+							"host": ["{{baseUrl}}"],
+							"path": ["transactions", "withdraw"]
+						},
+						"description": "Withdraw money from an account"
+					}
+				},
+				{
+					"name": "Transfer Between Accounts",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fromAccountId\": 1,\n  \"toAccountId\": 2,\n  \"amount\": 500.00\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/transactions/transfer",
+							"host": ["{{baseUrl}}"],
+							"path": ["transactions", "transfer"]
+						},
+						"description": "Transfer money between two accounts"
+					}
+				},
+				{
+					"name": "Transfer Between Own Accounts",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": {{userId}},\n  \"fromAccountId\": 1,\n  \"toAccountId\": 2,\n  \"amount\": 300.00\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/transactions/transfer-own",
+							"host": ["{{baseUrl}}"],
+							"path": ["transactions", "transfer-own"]
+						},
+						"description": "Transfer between user's own accounts with validation"
+					}
+				},
+				{
+					"name": "Get Transaction History",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/transactions/history/{{accountId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["transactions", "history", "{{accountId}}"]
+						},
+						"description": "Get all transactions for an account"
+					}
+				},
+				{
+					"name": "Get Transaction by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/transactions/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["transactions", "1"]
+						},
+						"description": "Get a specific transaction by ID"
+					}
+				},
+				{
+					"name": "Get Transactions by Date Range",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/transactions/history/{{accountId}}?startDate=2026-01-01T00:00:00&endDate=2026-12-31T23:59:59",
+							"host": ["{{baseUrl}}"],
+							"path": ["transactions", "history", "{{accountId}}"],
+							"query": [
+								{"key": "startDate", "value": "2026-01-01T00:00:00"},
+								{"key": "endDate", "value": "2026-12-31T23:59:59"}
+							]
+						},
+						"description": "Get transactions within a date range"
+					}
+				},
+				{
+					"name": "Get Transactions by Type",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/transactions/history/{{accountId}}/type/DEPOSIT",
+							"host": ["{{baseUrl}}"],
+							"path": ["transactions", "history", "{{accountId}}", "type", "DEPOSIT"]
+						},
+						"description": "Filter transactions by type (DEPOSIT/WITHDRAWAL/TRANSFER)"
+					}
+				},
+				{
+					"name": "Get Total Deposits",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/transactions/total-deposits/{{accountId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["transactions", "total-deposits", "{{accountId}}"]
+						},
+						"description": "Get sum of all deposits for an account"
+					}
+				},
+				{
+					"name": "Get Total Withdrawals",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/transactions/total-withdrawals/{{accountId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["transactions", "total-withdrawals", "{{accountId}}"]
+						},
+						"description": "Get sum of all withdrawals for an account"
+					}
+				},
+				{
+					"name": "Get Account Statement",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/transactions/statement/{{accountId}}?start=2026-01-01T00:00:00&end=2026-12-31T23:59:59",
+							"host": ["{{baseUrl}}"],
+							"path": ["transactions", "statement", "{{accountId}}"],
+							"query": [
+								{"key": "start", "value": "2026-01-01T00:00:00"},
+								{"key": "end", "value": "2026-12-31T23:59:59"}
+							]
+						},
+						"description": "Get detailed account statement with opening/closing balance"
+					}
+				}
+			]
+		},
+		{
+			"name": "Account Status Management",
+			"description": "Close, suspend, and reactivate accounts",
+			"item": [
+				{
+					"name": "Close Account",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountId\": {{accountId}},\n  \"adminId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/accounts/close",
+							"host": ["{{baseUrl}}"],
+							"path": ["accounts", "close"]
+						},
+						"description": "Close an account (requires zero balance)"
+					}
+				},
+				{
+					"name": "Suspend Account",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountId\": {{accountId}},\n  \"adminId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/accounts/suspend",
+							"host": ["{{baseUrl}}"],
+							"path": ["accounts", "suspend"]
+						},
+						"description": "Suspend an account (make it inactive)"
+					}
+				},
+				{
+					"name": "Reactivate Account",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountId\": {{accountId}},\n  \"adminId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/accounts/reactivate",
+							"host": ["{{baseUrl}}"],
+							"path": ["accounts", "reactivate"]
+						},
+						"description": "Reactivate a suspended account"
+					}
+				},
+				{
+					"name": "Update Account Status",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountId\": {{accountId}},\n  \"status\": \"ACTIVE\",\n  \"adminId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/accounts/update-status",
+							"host": ["{{baseUrl}}"],
+							"path": ["accounts", "update-status"]
+						},
+						"description": "Update account status (ACTIVE/SUSPENDED/CLOSED)"
+					}
+				}
+			]
+		},
+		{
+			"name": "Account Approval Workflow",
+			"description": "Request, approve, and reject account creation requests",
+			"item": [
+				{
+					"name": "Request Account Approval",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": {{userId}},\n  \"accountType\": \"SAVINGS\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/account-approvals/request",
+							"host": ["{{baseUrl}}"],
+							"path": ["account-approvals", "request"]
+						},
+						"description": "Submit account creation request for admin approval"
+					}
+				},
+				{
+					"name": "Get All Pending Approvals",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/account-approvals/pending",
+							"host": ["{{baseUrl}}"],
+							"path": ["account-approvals", "pending"]
+						},
+						"description": "Get all pending account approval requests"
+					}
+				},
+				{
+					"name": "Get Approvals by User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/account-approvals/user/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["account-approvals", "user", "{{userId}}"]
+						},
+						"description": "Get all approval requests for a specific user"
+					}
+				},
+				{
+					"name": "Approve Account Request",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"approvalId\": 1,\n  \"adminId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/account-approvals/approve",
+							"host": ["{{baseUrl}}"],
+							"path": ["account-approvals", "approve"]
+						},
+						"description": "Approve an account creation request"
+					}
+				},
+				{
+					"name": "Reject Account Request",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"approvalId\": 1,\n  \"adminId\": 1,\n  \"reason\": \"Insufficient documentation\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/account-approvals/reject",
+							"host": ["{{baseUrl}}"],
+							"path": ["account-approvals", "reject"]
+						},
+						"description": "Reject an account creation request with reason"
+					}
+				},
+				{
+					"name": "Cancel Approval Request",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"approvalId\": 1,\n  \"userId\": {{userId}}\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/account-approvals/cancel",
+							"host": ["{{baseUrl}}"],
+							"path": ["account-approvals", "cancel"]
+						},
+						"description": "User cancels their own approval request"
+					}
+				},
+				{
+					"name": "Get Approval by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/account-approvals/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["account-approvals", "1"]
+						},
+						"description": "Get specific approval request details"
+					}
+				},
+				{
+					"name": "Get Approvals by Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/account-approvals/status/APPROVED",
+							"host": ["{{baseUrl}}"],
+							"path": ["account-approvals", "status", "APPROVED"]
+						},
+						"description": "Get approval requests by status (PENDING/APPROVED/REJECTED/CANCELLED)"
+					}
+				}
+			]
+		},
+		{
+			"name": "Admin Operations",
+			"description": "Admin management and system monitoring",
+			"item": [
+				{
+					"name": "Create Admin",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Admin User\",\n  \"email\": \"admin@bank.com\",\n  \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/create",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "create"]
+						},
+						"description": "Create a new admin user"
+					}
+				},
+				{
+					"name": "Get Admin by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "1"]
+						},
+						"description": "Get admin details by ID"
+					}
+				},
+				{
+					"name": "Update Admin",
+					"request": {
+						"method": "PUT",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"adminId\": 1,\n  \"name\": \"Updated Admin\",\n  \"email\": \"newemail@bank.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/update",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "update"]
+						},
+						"description": "Update admin details"
+					}
+				},
+				{
+					"name": "Delete Admin",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/delete/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "delete", "1"]
+						},
+						"description": "Delete an admin account"
+					}
+				},
+				{
+					"name": "Change Admin Password",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"adminId\": 1,\n  \"oldPassword\": \"admin123\",\n  \"newPassword\": \"newadmin456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/change-password",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "change-password"]
+						},
+						"description": "Change admin password"
+					}
+				},
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/users",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "users"]
+						},
+						"description": "Get list of all users in the system"
+					}
+				},
+				{
+					"name": "Get User by ID (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/users/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "users", "{{userId}}"]
+						},
+						"description": "Get user details with accounts"
+					}
+				},
+				{
+					"name": "Suspend User",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": {{userId}}\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/users/suspend",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "users", "suspend"]
+						},
+						"description": "Suspend a user and all their accounts"
+					}
+				},
+				{
+					"name": "Activate User",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": {{userId}}\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/users/activate",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "users", "activate"]
+						},
+						"description": "Activate a suspended user"
+					}
+				},
+				{
+					"name": "Get Accounts by User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/users/{{userId}}/accounts",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "users", "{{userId}}", "accounts"]
+						},
+						"description": "Get all accounts for a specific user"
+					}
+				},
+				{
+					"name": "View All Transactions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/transactions",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "transactions"]
+						},
+						"description": "Get all transactions in the system"
+					}
+				},
+				{
+					"name": "Generate System Report",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/report",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "report"]
+						},
+						"description": "Generate system statistics report (users, accounts, transactions, total balance)"
+					}
+				}
+			]
+		},
+		{
+			"name": "Branch Management",
+			"description": "Create, manage, and query bank branches",
+			"item": [
+				{
+					"name": "Create Branch",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"branchCode\": \"BR001\",\n  \"branchName\": \"Main Branch\",\n  \"address\": \"123 Bank Street\",\n  \"city\": \"Mumbai\",\n  \"state\": \"Maharashtra\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/branches/create",
+							"host": ["{{baseUrl}}"],
+							"path": ["branches", "create"]
+						},
+						"description": "Create a new bank branch"
+					}
+				},
+				{
+					"name": "Get Branch by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/branches/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["branches", "1"]
+						},
+						"description": "Get branch details by ID"
+					}
+				},
+				{
+					"name": "Get Branch by Code",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/branches/code/BR001",
+							"host": ["{{baseUrl}}"],
+							"path": ["branches", "code", "BR001"]
+						},
+						"description": "Get branch details by branch code"
+					}
+				},
+				{
+					"name": "Get All Branches",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/branches",
+							"host": ["{{baseUrl}}"],
+							"path": ["branches"]
+						},
+						"description": "Get list of all branches"
+					}
+				},
+				{
+					"name": "Update Branch",
+					"request": {
+						"method": "PUT",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"branchId\": 1,\n  \"branchName\": \"Updated Branch Name\",\n  \"city\": \"New City\",\n  \"state\": \"New State\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/branches/update",
+							"host": ["{{baseUrl}}"],
+							"path": ["branches", "update"]
+						},
+						"description": "Update branch details"
+					}
+				},
+				{
+					"name": "Delete Branch",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/branches/delete/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["branches", "delete", "1"]
+						},
+						"description": "Delete a branch (only if no accounts exist)"
+					}
+				},
+				{
+					"name": "Get Branches by City",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/branches/city/Mumbai",
+							"host": ["{{baseUrl}}"],
+							"path": ["branches", "city", "Mumbai"]
+						},
+						"description": "Get all branches in a specific city"
+					}
+				},
+				{
+					"name": "Get Branches by State",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/branches/state/Maharashtra",
+							"host": ["{{baseUrl}}"],
+							"path": ["branches", "state", "Maharashtra"]
+						},
+						"description": "Get all branches in a specific state"
+					}
+				},
+				{
+					"name": "Get Accounts by Branch",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/branches/1/accounts",
+							"host": ["{{baseUrl}}"],
+							"path": ["branches", "1", "accounts"]
+						},
+						"description": "Get all accounts associated with a branch"
+					}
+				},
+				{
+					"name": "Get Account Count by Branch",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/branches/1/account-count",
+							"host": ["{{baseUrl}}"],
+							"path": ["branches", "1", "account-count"]
+						},
+						"description": "Get count of accounts in a branch"
+					}
+				}
+			]
+		},
+		{
+			"name": "Complete Test Flow",
+			"description": "Step-by-step testing workflow",
+			"item": [
+				{
+					"name": "1. Create Branch",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"branchCode\": \"TEST01\",\n  \"branchName\": \"Test Branch\",\n  \"address\": \"Test Address\",\n  \"city\": \"Test City\",\n  \"state\": \"Test State\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/branches/create",
+							"host": ["{{baseUrl}}"],
+							"path": ["branches", "create"]
+						}
+					}
+				},
+				{
+					"name": "2. Register User",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"test123\",\n  \"phone\": \"9999999999\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/create",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "create"]
+						}
+					}
+				},
+				{
+					"name": "3. Login User",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"test123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "login"]
+						}
+					}
+				},
+				{
+					"name": "4. Create Account",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountType\": \"SAVINGS\",\n  \"branchName\": \"Test Branch\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/accounts/create/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["accounts", "create", "1"]
+						}
+					}
+				},
+				{
+					"name": "5. Deposit Money",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountId\": 1,\n  \"amount\": 10000.00\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/transactions/deposit",
+							"host": ["{{baseUrl}}"],
+							"path": ["transactions", "deposit"]
+						}
+					}
+				},
+				{
+					"name": "6. Withdraw Money",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountId\": 1,\n  \"amount\": 2000.00\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/transactions/withdraw",
+							"host": ["{{baseUrl}}"],
+							"path": ["transactions", "withdraw"]
+						}
+					}
+				},
+				{
+					"name": "7. View Transaction History",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/transactions/history/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["transactions", "history", "1"]
+						}
+					}
+				},
+				{
+					"name": "8. Generate System Report",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/report",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "report"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "accountId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "adminId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "branchId",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}

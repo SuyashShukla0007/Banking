@@ -31,10 +31,11 @@ public class BranchService {
             throw new RuntimeException("Branch code already exists");
         } else {
             BankBranch branch = new BankBranch();
-            branch.setBranchName(branchName);
             branch.setBranchCode(branchCode);
+            branch.setBranchName(branchName);
             branch.setCity(city);
             branch.setState(state);
+            branch.setAddress(address);
             branchRepo.save(branch);
         }
         return;
@@ -110,7 +111,7 @@ public class BranchService {
     public List<BankBranch> getBranchesByCity(String city) {
         return branchRepo.findAll().stream()
                 .filter(branch -> branch.getCity().equalsIgnoreCase(city))
-                .toList();  
+                .toList();
     }
     // Method: getAccountsByBranch(Long branchId)
     // - Find all accounts associated with branch
@@ -126,23 +127,21 @@ public class BranchService {
     // - Find all branches in given state
     // - Return list of branches
 
-        public List<BankBranch> getBranchesByState(String state) {
-            return branchRepo.findAll().stream()
-                    .filter(branch -> branch.getState().equalsIgnoreCase(state))
-                    .toList();  
-        }
+    public List<BankBranch> getBranchesByState(String state) {
+        return branchRepo.findAll().stream()
+                .filter(branch -> branch.getState().equalsIgnoreCase(state))
+                .toList();
+    }
 
     // Method: getAccountCountByBranch(Long branchId)
     // - Find branch by ID
     // - Count all accounts associated with branch
     // - Return account count
 
-        public int getAccountCountByBranch(Long branchId) throws RuntimeException
-        {
-            BankBranch bankBranch=branchRepo.findById(branchId).orElseThrow(()-> new RuntimeException("no branch found for this id"));
-            return bankBranch.getAccounts().isEmpty()?bankBranch.getAccounts().size():0;
-        }
-   
-
+    public int getAccountCountByBranch(Long branchId) throws RuntimeException {
+        BankBranch bankBranch = branchRepo.findById(branchId)
+                .orElseThrow(() -> new RuntimeException("no branch found for this id"));
+        return bankBranch.getAccounts().isEmpty() ? bankBranch.getAccounts().size() : 0;
+    }
 
 }

@@ -5,6 +5,7 @@ import com.example.bank.DTO.User.UserRegisterRequest;
 import com.example.bank.services.user.UserAuthenticationService;
 import com.example.bank.services.user.UserManagementService;
 import com.example.bank.services.user.UserRegistrationService;
+import com.example.bank.services.user.UserService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,13 +15,16 @@ public class UserController {
     private final UserRegistrationService userRegistrationService;
     private final UserAuthenticationService userAuthenticationService;
     private final UserManagementService userManagementService;
+    private final UserService userService;
 
     public UserController(UserRegistrationService userRegistrationService,
             UserAuthenticationService userAuthenticationService,
-            UserManagementService userManagementService) {
+            UserManagementService userManagementService,
+            UserService userService) {
         this.userRegistrationService = userRegistrationService;
         this.userAuthenticationService = userAuthenticationService;
         this.userManagementService = userManagementService;
+        this.userService = userService;
     }
 
     // testing
@@ -61,6 +65,55 @@ public class UserController {
         }
     }
 
-    // @GetMapping("/getDetails")
+    /**
+     * Update user profile (name and/or email)
+     * PUT /users/{userId}/profile?name=John&email=john@example.com
+     */
+    @PutMapping("/{userId}/profile")
+    public String updateProfile(@PathVariable Long userId,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String email) {
+        try {
+            userService.updateUserProfile(userId, name, email);
+            return "Profile updated successfully";
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Failed to update profile: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Change user password
+     * POST /users/{userId}/change-password?oldPassword=old123&newPassword=new456
+     */
+    @PostMapping("/{userId}/change-password")
+    public String changePassword(@PathVariable Long userId,
+            @RequestParam String oldPassword,
+            @RequestParam String newPassword) {
+        try {
+            userService.changePassword(userId, oldPassword, newPassword);
+            return "Password changed successfully";
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Failed to change password: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Deactivate user account
+     * POST /users/{userId}/deactivate
+     * 
+     * NOTE: This endpoint calls the deactivateAccount method you need to implement
+     * in UserService
+     */
+    @PostMapping("/{userId}/deactivate")
+    public String deactivateAccount(@PathVariable Long userId) {
+        try {
+            userService.deactivateAccount(userId);
+            return "Account deactivated successfully";
+        } catch (UnsupportedOperationException e) {
+            return "⚠️ TODO: Complete the deactivateAccount() method in UserService first!";
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Failed to deactivate account: " + e.getMessage());
+        }
+    }
 
 }

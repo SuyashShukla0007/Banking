@@ -8,4 +8,6 @@ import com.example.bank.model.Admin;
 @Repository
 public interface AdminRepo extends JpaRepository<Admin, Long> {
 
+    String findByEmail(String email);
+
 }

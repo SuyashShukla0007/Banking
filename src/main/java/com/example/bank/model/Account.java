@@ -42,8 +42,5 @@ public class Account {
 
     @ManyToOne
     @JoinColumn(name = "branch_id", nullable = false)
-    private Long branch;
-
-    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
-    private List<Transaction> transactions;
+    private BankBranch branch;
 }
