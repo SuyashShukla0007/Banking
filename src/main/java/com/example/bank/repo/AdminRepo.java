@@ -4,10 +4,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.example.bank.model.Admin;
+import java.util.List;
 
 @Repository
 public interface AdminRepo extends JpaRepository<Admin, Long> {
 
-    String findByEmail(String email);
+    List<Admin> findByEmail(String email);
 
 }

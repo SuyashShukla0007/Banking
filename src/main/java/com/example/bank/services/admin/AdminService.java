@@ -3,6 +3,7 @@ package com.example.bank.services.admin;
 import org.springframework.stereotype.Service;
 import java.util.*;
 
+import com.example.bank.DTO.Admin.AdminUpdateRequest;
 import com.example.bank.DTO.SystemReportDTO;
 import com.example.bank.exception.DuplicateEmailException;
 import com.example.bank.exception.InvalidPasswordException;
@@ -70,20 +71,21 @@ public class AdminService {
                 .orElseThrow(() -> new EntityNotFoundException("Admin with ID " + adminId + " not found"));
     }
 
-    // Method: updateAdmin(Long adminId, String name, String email)
+    // Method: updateAdmin(Long adminId, AdminUpdateRequest request)
     // - Find admin by ID
     // - Update name and email if provided
     // - Save and return updated admin
 
-    public void updateAdmin(Long adminId, String name, String email) {
+    public Admin updateAdmin(Long adminId, AdminUpdateRequest request) {
         Admin admin = adminRepo.findById(adminId)
                 .orElseThrow(() -> new EntityNotFoundException("Admin with ID " + adminId + " not found"));
 
-        if (email != null && !email.isEmpty())
-            admin.setEmail(email);
-        if (name != null && !name.isEmpty())
-            admin.setName(name);
-        adminRepo.save(admin);
+        if (request.getEmail() != null && !request.getEmail().isEmpty())
+            admin.setEmail(request.getEmail());
+        if (request.getName() != null && !request.getName().isEmpty())
+            admin.setName(request.getName());
+
+        return adminRepo.save(admin);
     }
 
     // Method: deleteAdmin(Long adminId)
