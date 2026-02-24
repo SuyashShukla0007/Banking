@@ -271,4 +271,11 @@ public class TransactionService {
         transactionRepo.save(transaction);
     }
 
+    // Method: getAllTransactions()
+    // - Find all transactions in system
+    // - Return list of all transactions
+    public List<Transaction> getAllTransactions() {
+        return transactionRepo.findAll();
+    }
+
 }

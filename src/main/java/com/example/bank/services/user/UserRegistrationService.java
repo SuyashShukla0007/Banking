@@ -39,10 +39,10 @@ public class UserRegistrationService {
         user.setEmail(request.getEmail());
 
         // hash password using bCrypt
-        String rawPassword = request.getPassword();
-        String hashPassword = BCrypt.hashpw(rawPassword, BCrypt.gensalt());
+        // String rawPassword = request.getPassword();
+        // String hashPassword = BCrypt.hashpw(rawPassword, BCrypt.gensalt());
 
-        user.setPassword(hashPassword);
+        user.setPassword(request.getPassword());
         user.setRole("USER");
 
         return newUsersRepo.save(user);

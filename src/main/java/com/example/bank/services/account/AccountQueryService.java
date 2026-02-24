@@ -30,4 +30,36 @@ public class AccountQueryService {
                 .map(Account::getId)
                 .toList();
     }
+
+    /**
+     * Get all accounts in the system
+     * 
+     * @return List of all accounts
+     */
+    public List<Account> getAllAccounts() {
+        return accountRepo.findAll();
+    }
+
+    /**
+     * Get account by ID
+     * 
+     * @param accountId Account ID
+     * @return Account details
+     */
+    public Account getAccountById(Long accountId) {
+        return accountRepo.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("Account not found with ID: " + accountId));
+    }
+
+    /**
+     * Get account balance by account ID
+     * 
+     * @param accountId Account ID
+     * @return Account balance
+     */
+    public Double getAccountBalance(Long accountId) {
+        Account account = accountRepo.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("Account not found with ID: " + accountId));
+        return account.getBalance();
+    }
 }
