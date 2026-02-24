@@ -1,4 +1,4 @@
-package com.example.bank.controller;
+package com.example.bank.controller.user;
 
 import com.example.bank.DTO.User.UserLoginRequest;
 import com.example.bank.DTO.User.UserRegisterRequest;

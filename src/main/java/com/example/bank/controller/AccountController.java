@@ -31,4 +31,19 @@ public class AccountController {
     public List<Long> getAccounts(@PathVariable Long userId) {
         return accountQueryService.getAccountsByUserId(userId);
     }
+
+    @GetMapping("/all")
+    public List<Account> getAllAccounts() {
+        return accountQueryService.getAllAccounts();
+    }
+
+    @GetMapping("/{accountId}")
+    public Account getAccountById(@PathVariable Long accountId) {
+        return accountQueryService.getAccountById(accountId);
+    }
+
+    @GetMapping("/{accountId}/balance")
+    public Double getAccountBalance(@PathVariable Long accountId) {
+        return accountQueryService.getAccountBalance(accountId);
+    }
 }

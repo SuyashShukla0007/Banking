@@ -1,99 +1,54 @@
 package com.example.bank.controller;
 
+import com.example.bank.DTO.Transaction.DepositRequest;
+import com.example.bank.DTO.Transaction.TransferRequest;
+import com.example.bank.DTO.Transaction.WithdrawRequest;
+import com.example.bank.model.Transaction;
+import com.example.bank.services.account.TransactionService;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/transactions")
 public class TransactionController {
 
-    // Inject TransactionService
+    private final TransactionService transactionService;
 
-    // Constructor injection
+    public TransactionController(TransactionService transactionService) {
+        this.transactionService = transactionService;
+    }
 
-    // POST /transactions/deposit
-    // Request Body: { "accountId": Long, "amount": Double }
-    // - Validate amount is positive
-    // - Call transactionService.deposit(accountId, amount)
-    // - Return success message or transaction details
-    // - Handle exceptions (account not found, account not active)
+    @PostMapping("/deposit")
+    public String deposit(@RequestBody DepositRequest request) {
+        transactionService.deposit(request.getAccountId(), request.getAmount());
+        return "Deposit successful";
+    }
 
-    // POST /transactions/withdraw
-    // Request Body: { "accountId": Long, "amount": Double }
-    // - Validate amount is positive
-    // - Call transactionService.withdraw(accountId, amount)
-    // - Return success message or transaction details
-    // - Handle exceptions (account not found, insufficient balance, account not
-    // active)
+    @PostMapping("/withdraw")
+    public String withdraw(@RequestBody WithdrawRequest request) {
+        transactionService.withdraw(request.getAccountId(), request.getAmount());
+        return "Withdrawal successful";
+    }
 
-    // POST /transactions/transfer
-    // Request Body: { "fromAccountId": Long, "toAccountId": Long, "amount": Double
-    // }
-    // - Validate amount is positive
-    // - Validate fromAccountId != toAccountId
-    // - Call transactionService.transfer(fromAccountId, toAccountId, amount)
-    // - Return success message or transaction details
-    // - Handle exceptions (accounts not found, insufficient balance, accounts not
-    // active)
+    @PostMapping("/transfer")
+    public String transfer(@RequestBody TransferRequest request) {
+        transactionService.transfer(request.getFromAccountId(), request.getToAccountId(), request.getAmount());
+        return "Transfer successful";
+    }
 
-    // POST /transactions/transfer-own-accounts
-    // Request Body: { "userId": Long, "fromAccountId": Long, "toAccountId": Long,
-    // "amount": Double }
-    // - Validate amount is positive
-    // - Validate both accounts belong to the user
-    // - Call transactionService.transferBetweenOwnAccounts(userId, fromAccountId,
-    // toAccountId, amount)
-    // - Return success message or transaction details
-    // - Handle exceptions (accounts don't belong to user, insufficient balance)
+    @GetMapping("/{accountId}/history")
+    public List<Transaction> getTransactionHistory(@PathVariable Long accountId) {
+        return transactionService.getTransactionHistory(accountId);
+    }
 
-    // GET /transactions/account/{accountId}
-    // Path Variable: accountId
-    // - Call transactionService.getTransactionHistory(accountId)
-    // - Return list of all transactions for the account
-    // - Ordered by timestamp descending (newest first)
+    @GetMapping("/{transactionId}")
+    public Transaction getTransactionById(@PathVariable Long transactionId) {
+        return transactionService.getTransactionById(transactionId);
+    }
 
-    // GET /transactions/{transactionId}
-    // Path Variable: transactionId
-    // - Call transactionService.getTransactionById(transactionId)
-    // - Return transaction details
-    // - Handle exception if transaction not found
-
-    // GET /transactions/account/{accountId}/date-range
-    // Path Variable: accountId
-    // Query Params: startDate (LocalDateTime), endDate (LocalDateTime)
-    // - Parse date parameters
-    // - Call transactionService.getTransactionsByDateRange(accountId, startDate,
-    // endDate)
-    // - Return filtered list of transactions
-    // - Handle invalid date formats
-
-    // GET /transactions/account/{accountId}/type/{type}
-    // Path Variables: accountId, type (DEPOSIT/WITHDRAWAL/TRANSFER)
-    // - Validate type is one of: DEPOSIT, WITHDRAWAL, TRANSFER
-    // - Call transactionService.getTransactionsByType(accountId, type)
-    // - Return filtered list of transactions by type
-
-    // GET /transactions/account/{accountId}/total-deposits
-    // Path Variable: accountId
-    // - Call transactionService.getTotalDeposits(accountId)
-    // - Return sum of all deposit amounts for the account
-    // - Return as JSON: { "accountId": Long, "totalDeposits": Double }
-
-    // GET /transactions/account/{accountId}/total-withdrawals
-    // Path Variable: accountId
-    // - Call transactionService.getTotalWithdrawals(accountId)
-    // - Return sum of all withdrawal amounts for the account
-    // - Return as JSON: { "accountId": Long, "totalWithdrawals": Double }
-
-    // GET /transactions/account/{accountId}/statement
-    // Path Variable: accountId
-    // Query Params: start (LocalDateTime), end (LocalDateTime)
-    // - Parse date parameters
-    // - Call transactionService.getAccountStatement(accountId, start, end)
-    // - Return AccountStatement DTO with:
-    // - Account details
-    // - List of transactions in date range
-    // - Opening balance
-    // - Closing balance
-    // - Handle invalid dates or account not found
-
+    @GetMapping("/all")
+    public List<Transaction> getAllTransactions() {
+        return transactionService.getAllTransactions();
+    }
 }

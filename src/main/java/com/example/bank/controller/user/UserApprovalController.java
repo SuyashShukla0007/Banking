@@ -1,4 +1,4 @@
-package com.example.bank.controller;
+package com.example.bank.controller.user;
 
 import com.example.bank.model.NewUserApproval;
 import com.example.bank.model.User;
