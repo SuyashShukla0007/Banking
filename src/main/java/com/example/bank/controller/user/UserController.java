@@ -2,74 +2,60 @@ package com.example.bank.controller.user;
 
 import com.example.bank.DTO.User.UserLoginRequest;
 import com.example.bank.DTO.User.UserRegisterRequest;
-import com.example.bank.services.user.UserAuthenticationService;
-import com.example.bank.services.user.UserManagementService;
-import com.example.bank.services.user.UserRegistrationService;
+import com.example.bank.model.NewUserApproval;
+import com.example.bank.model.User;
 import com.example.bank.services.user.UserService;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/users")
 public class UserController {
 
-    private final UserRegistrationService userRegistrationService;
-    private final UserAuthenticationService userAuthenticationService;
-    private final UserManagementService userManagementService;
     private final UserService userService;
 
-    public UserController(UserRegistrationService userRegistrationService,
-            UserAuthenticationService userAuthenticationService,
-            UserManagementService userManagementService,
-            UserService userService) {
-        this.userRegistrationService = userRegistrationService;
-        this.userAuthenticationService = userAuthenticationService;
-        this.userManagementService = userManagementService;
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 
-    // testing
-    @GetMapping("/")
+    // ========== User CRUD ==========
+
+    @GetMapping("/users/")
     public String test() {
         return "hello";
     }
 
-    // create user
-    @PostMapping("/create")
+    @PostMapping("/users/create")
     public String createUser(@RequestBody UserRegisterRequest request) {
         try {
-            userRegistrationService.createUser(request);
+            userService.createUser(request);
             return "Successfull";
         } catch (RuntimeException e) {
             throw new RuntimeException("user email already exists " + e);
         }
     }
 
-    // login user
-    @PostMapping("/login")
+    @PostMapping("/users/login")
     public String userLogin(@RequestBody UserLoginRequest request) {
         try {
-            userAuthenticationService.login(request.getEmail(), request.getPassword());
+            userService.login(request.getEmail(), request.getPassword());
             return "Login successful";
         } catch (RuntimeException e) {
             throw new RuntimeException("check credentials " + e);
         }
     }
 
-    @GetMapping("/delete-user/{id}")
+    @GetMapping("/users/delete-user/{id}")
     public String delete(@PathVariable Long id) {
         try {
-            userManagementService.deleteUser(id);
+            userService.deleteUser(id);
             return "user deleted successfully";
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
     }
 
-    /**
-     * Update user profile (name and/or email)
-     * PUT /users/{userId}/profile?name=John&email=john@example.com
-     */
-    @PutMapping("/{userId}/profile")
+    @PutMapping("/users/{userId}/profile")
     public String updateProfile(@PathVariable Long userId,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String email) {
@@ -81,11 +67,7 @@ public class UserController {
         }
     }
 
-    /**
-     * Change user password
-     * POST /users/{userId}/change-password?oldPassword=old123&newPassword=new456
-     */
-    @PostMapping("/{userId}/change-password")
+    @PostMapping("/users/{userId}/change-password")
     public String changePassword(@PathVariable Long userId,
             @RequestParam String oldPassword,
             @RequestParam String newPassword) {
@@ -97,23 +79,46 @@ public class UserController {
         }
     }
 
-    /**
-     * Deactivate user account
-     * POST /users/{userId}/deactivate
-     * 
-     * NOTE: This endpoint calls the deactivateAccount method you need to implement
-     * in UserService
-     */
-    @PostMapping("/{userId}/deactivate")
+    @PostMapping("/users/{userId}/deactivate")
     public String deactivateAccount(@PathVariable Long userId) {
         try {
             userService.deactivateAccount(userId);
             return "Account deactivated successfully";
         } catch (UnsupportedOperationException e) {
-            return "⚠️ TODO: Complete the deactivateAccount() method in UserService first!";
+            return "TODO: Complete the deactivateAccount() method in UserService first!";
         } catch (RuntimeException e) {
             throw new RuntimeException("Failed to deactivate account: " + e.getMessage());
         }
     }
 
+    // ========== User Approvals (Admin operations) ==========
+
+    @GetMapping("/api/admin/user-approvals/pending")
+    public List<NewUserApproval> getPendingApprovals() {
+        return userService.getAllPendingUserApprovals();
+    }
+
+    @PostMapping("/api/admin/user-approvals/{approvalId}/approve")
+    public String approveUser(@PathVariable Long approvalId, @RequestParam Long adminId) {
+        User user = userService.approveUserRegistration(approvalId, adminId);
+        return "User approved successfully. User ID: " + user.getId();
+    }
+
+    @PostMapping("/api/admin/user-approvals/{approvalId}/reject")
+    public String rejectUser(@PathVariable Long approvalId,
+            @RequestParam Long adminId,
+            @RequestParam String reason) {
+        userService.rejectUserRegistration(approvalId, adminId, reason);
+        return "User registration rejected. Reason: " + reason;
+    }
+
+    @GetMapping("/api/admin/user-approvals/{approvalId}")
+    public NewUserApproval getApprovalById(@PathVariable Long approvalId) {
+        return userService.getApprovalById(approvalId);
+    }
+
+    @GetMapping("/api/admin/user-approvals/by-email")
+    public NewUserApproval getApprovalByEmail(@RequestParam String email) {
+        return userService.getApprovalByEmail(email);
+    }
 }
