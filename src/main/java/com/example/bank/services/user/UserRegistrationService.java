@@ -1,10 +1,10 @@
 package com.example.bank.services.user;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import com.example.bank.DTO.User.UserRegisterRequest;
 import com.example.bank.model.NewUserApproval;
 import com.example.bank.repo.NewUsers;
 import com.example.bank.repo.UserRepository;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 /**
@@ -15,10 +15,13 @@ public class UserRegistrationService {
 
     private final UserRepository userRepository;
     private final NewUsers newUsersRepo;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserRegistrationService(UserRepository userRepository, NewUsers newUsersRepo) {
+    public UserRegistrationService(UserRepository userRepository, NewUsers newUsersRepo,
+            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.newUsersRepo = newUsersRepo;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -38,11 +41,8 @@ public class UserRegistrationService {
         user.setName(request.getName());
         user.setEmail(request.getEmail());
 
-        // hash password using bCrypt
-        // String rawPassword = request.getPassword();
-        // String hashPassword = BCrypt.hashpw(rawPassword, BCrypt.gensalt());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        user.setPassword(request.getPassword());
         user.setRole("USER");
 
         return newUsersRepo.save(user);
