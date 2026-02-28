@@ -4,6 +4,9 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.example.bank.DTO.Branch.BranchUpdateRequest;
+import com.example.bank.exception.InvalidOperationException;
+import com.example.bank.exception.ResourceAlreadyExistsException;
+import com.example.bank.exception.ResourceNotFoundException;
 import com.example.bank.model.Account;
 import com.example.bank.model.BankBranch;
 import com.example.bank.repo.BranchRepo;
@@ -28,7 +31,7 @@ public class BranchService {
     public void createBranch(String branchName, String branchCode, String address, String city, String state)
             throws RuntimeException {
         if (branchRepo.existsByBranchCode(branchCode)) {
-            throw new RuntimeException("Branch code already exists");
+            throw new ResourceAlreadyExistsException("Branch code already exists");
         } else {
             BankBranch branch = new BankBranch();
             branch.setBranchCode(branchCode);
@@ -47,7 +50,7 @@ public class BranchService {
 
     public BankBranch getBranchById(Long branchId) throws RuntimeException {
         return branchRepo.findById(branchId)
-                .orElseThrow(() -> new RuntimeException("Branch not found with ID: " + branchId));
+                .orElseThrow(() -> new ResourceNotFoundException("Branch not found with ID: " + branchId));
     }
 
     // Method: getBranchByCode(String branchCode)
@@ -56,7 +59,7 @@ public class BranchService {
 
     public BankBranch getBranchByCode(String branchCode) throws RuntimeException {
         return branchRepo.findByBranchCode(branchCode)
-                .orElseThrow(() -> new RuntimeException("Branch not found with code: " + branchCode));
+                .orElseThrow(() -> new ResourceNotFoundException("Branch not found with code: " + branchCode));
     }
 
     // Method: getAllBranches()
@@ -75,7 +78,8 @@ public class BranchService {
 
     public BankBranch updateBranch(BranchUpdateRequest updateRequest) throws RuntimeException {
         BankBranch branch = branchRepo.findById(updateRequest.getBranchId())
-                .orElseThrow(() -> new RuntimeException("Branch not found with ID: " + updateRequest.getBranchId()));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Branch not found with ID: " + updateRequest.getBranchId()));
         if (updateRequest.getBranchName() != null && !updateRequest.getBranchName().isEmpty()) {
             branch.setBranchName(updateRequest.getBranchName());
         }
@@ -96,9 +100,9 @@ public class BranchService {
 
     public void deleteBranch(Long branchId) throws RuntimeException {
         BankBranch branch = branchRepo.findById(branchId)
-                .orElseThrow(() -> new RuntimeException("Branch not found with ID: " + branchId));
+                .orElseThrow(() -> new ResourceNotFoundException("Branch not found with ID: " + branchId));
         if (branch.getAccounts() != null && !branch.getAccounts().isEmpty()) {
-            throw new RuntimeException("Cannot delete branch with active accounts");
+            throw new InvalidOperationException("Cannot delete branch with active accounts");
         } else {
             branchRepo.delete(branch);
             return;
@@ -119,7 +123,7 @@ public class BranchService {
 
     public List<Account> getAccountsByBranch(Long branchId) throws RuntimeException {
         BankBranch branch = branchRepo.findById(branchId)
-                .orElseThrow(() -> new RuntimeException("Branch not found with ID: " + branchId));
+                .orElseThrow(() -> new ResourceNotFoundException("Branch not found with ID: " + branchId));
         return branch.getAccounts();
     }
 
@@ -140,8 +144,8 @@ public class BranchService {
 
     public int getAccountCountByBranch(Long branchId) throws RuntimeException {
         BankBranch bankBranch = branchRepo.findById(branchId)
-                .orElseThrow(() -> new RuntimeException("no branch found for this id"));
-        return bankBranch.getAccounts().isEmpty() ? bankBranch.getAccounts().size() : 0;
+                .orElseThrow(() -> new ResourceNotFoundException("Branch not found with ID: " + branchId));
+        return bankBranch.getAccounts().size();
     }
 
 }

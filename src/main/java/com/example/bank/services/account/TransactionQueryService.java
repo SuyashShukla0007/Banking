@@ -1,9 +1,13 @@
 package com.example.bank.services.account;
 
 import com.example.bank.DTO.Account.AccountStatement;
+import com.example.bank.enums.TransactionType;
+import com.example.bank.exception.ResourceNotFoundException;
 import com.example.bank.model.Transaction;
 import com.example.bank.repo.AccountRepo;
 import com.example.bank.repo.TransactionRepo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,37 +35,34 @@ public class TransactionQueryService {
 
     public Transaction getTransactionById(Long transactionId) {
         return transactionRepo.findById(transactionId)
-                .orElseThrow(() -> new RuntimeException("Transaction not found with ID: " + transactionId));
+                .orElseThrow(() -> new ResourceNotFoundException("Transaction not found with ID: " + transactionId));
     }
 
     public List<Transaction> getTransactionsByDateRange(Long accountId, LocalDateTime startDate,
             LocalDateTime endDate) {
-        return transactionRepo.findByFromAccountIdOrToAccountIdAndTimestampBetween(accountId, accountId, startDate,
-                endDate);
+        return transactionRepo.findByAccountIdAndTimestampBetween(accountId, startDate, endDate);
     }
 
     public List<Transaction> getTransactionsByType(Long accountId, String type) {
-        return transactionRepo.findByFromAccountIdOrToAccountIdAndType(accountId, accountId, type);
+        return transactionRepo.findByAccountIdAndType(accountId, TransactionType.valueOf(type));
     }
 
     public Double getTotalDeposits(Long accountId) {
-        List<Transaction> deposits = transactionRepo.findByFromAccountIdOrToAccountIdAndType(accountId, accountId,
-                "DEPOSIT");
+        List<Transaction> deposits = transactionRepo.findByAccountIdAndType(accountId, TransactionType.DEPOSIT);
         return deposits.stream().mapToDouble(t -> t.getAmount().doubleValue()).sum();
     }
 
     public Double getTotalWithdrawals(Long accountId) {
-        List<Transaction> withdrawals = transactionRepo.findByFromAccountIdOrToAccountIdAndType(accountId, accountId,
-                "WITHDRAWAL");
+        List<Transaction> withdrawals = transactionRepo.findByAccountIdAndType(accountId, TransactionType.WITHDRAWAL);
         return withdrawals.stream().mapToDouble(t -> t.getAmount().doubleValue()).sum();
     }
 
     public AccountStatement getAccountStatement(Long accountId, LocalDateTime start, LocalDateTime end) {
         var account = accountRepo.findById(accountId)
-                .orElseThrow(() -> new RuntimeException("Account not found with ID: " + accountId));
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with ID: " + accountId));
 
         List<Transaction> transactions = transactionRepo
-                .findByFromAccountIdOrToAccountIdAndTimestampBetween(accountId, accountId, start, end);
+                .findByAccountIdAndTimestampBetween(accountId, start, end);
         Double openingBalance = account.getBalance()
                 - transactions.stream().mapToDouble(t -> t.getAmount().doubleValue()).sum();
         Double closingBalance = account.getBalance();
@@ -70,5 +71,13 @@ public class TransactionQueryService {
 
     public List<Transaction> getAllTransactions() {
         return transactionRepo.findAll();
+    }
+
+    public Page<Transaction> getAllTransactions(Pageable pageable) {
+        return transactionRepo.findAll(pageable);
+    }
+
+    public Page<Transaction> getTransactionHistory(Long accountId, Pageable pageable) {
+        return transactionRepo.findByAccountIdPaged(accountId, pageable);
     }
 }

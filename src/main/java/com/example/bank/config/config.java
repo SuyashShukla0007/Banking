@@ -25,7 +25,7 @@ class ConfigConfiguration {
                         .requestMatchers("/**", "/h2-console/**").permitAll()
                         .anyRequest().authenticated())
                 .csrf(csrf -> csrf.disable())
-                .headers(headers -> headers.frameOptions().disable());
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();
 

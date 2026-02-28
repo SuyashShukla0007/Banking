@@ -2,12 +2,12 @@ package com.example.bank.controller.user;
 
 import com.example.bank.DTO.User.UserLoginRequest;
 import com.example.bank.DTO.User.UserRegisterRequest;
+import com.example.bank.DTO.response.ApiResponse;
 import com.example.bank.model.NewUserApproval;
 import com.example.bank.model.User;
 import com.example.bank.services.user.UserService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 public class UserController {
@@ -21,104 +21,47 @@ public class UserController {
     // ========== User CRUD ==========
 
     @GetMapping("/users/")
-    public String test() {
-        return "hello";
+    public ApiResponse<String> test() {
+        return ApiResponse.success("hello");
     }
 
     @PostMapping("/users/create")
-    public String createUser(@RequestBody UserRegisterRequest request) {
-        try {
-            userService.createUser(request);
-            return "Successfull";
-        } catch (RuntimeException e) {
-            throw new RuntimeException("user email already exists " + e);
-        }
+    public ApiResponse<NewUserApproval> createUser(@Valid @RequestBody UserRegisterRequest request) {
+        NewUserApproval approval = userService.createUser(request);
+        return ApiResponse.success("Registration submitted for approval", approval);
     }
 
     @PostMapping("/users/login")
-    public String userLogin(@RequestBody UserLoginRequest request) {
-        try {
-            userService.login(request.getEmail(), request.getPassword());
-            return "Login successful";
-        } catch (RuntimeException e) {
-            throw new RuntimeException("check credentials " + e);
-        }
+    public ApiResponse<Long> userLogin(@Valid @RequestBody UserLoginRequest request) {
+        Long userId = userService.login(request.getEmail(), request.getPassword());
+        return ApiResponse.success("Login successful", userId);
     }
 
-    @GetMapping("/users/delete-user/{id}")
-    public String delete(@PathVariable Long id) {
-        try {
-            userService.deleteUser(id);
-            return "user deleted successfully";
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
-        }
+    @DeleteMapping("/users/{id}")
+    public ApiResponse<Void> delete(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ApiResponse.success("User deleted successfully");
     }
 
     @PutMapping("/users/{userId}/profile")
-    public String updateProfile(@PathVariable Long userId,
+    public ApiResponse<Void> updateProfile(@PathVariable Long userId,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String email) {
-        try {
-            userService.updateUserProfile(userId, name, email);
-            return "Profile updated successfully";
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Failed to update profile: " + e.getMessage());
-        }
+        userService.updateUserProfile(userId, name, email);
+        return ApiResponse.success("Profile updated successfully");
     }
 
     @PostMapping("/users/{userId}/change-password")
-    public String changePassword(@PathVariable Long userId,
+    public ApiResponse<Void> changePassword(@PathVariable Long userId,
             @RequestParam String oldPassword,
             @RequestParam String newPassword) {
-        try {
-            userService.changePassword(userId, oldPassword, newPassword);
-            return "Password changed successfully";
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Failed to change password: " + e.getMessage());
-        }
+        userService.changePassword(userId, oldPassword, newPassword);
+        return ApiResponse.success("Password changed successfully");
     }
 
     @PostMapping("/users/{userId}/deactivate")
-    public String deactivateAccount(@PathVariable Long userId) {
-        try {
-            userService.deactivateAccount(userId);
-            return "Account deactivated successfully";
-        } catch (UnsupportedOperationException e) {
-            return "TODO: Complete the deactivateAccount() method in UserService first!";
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Failed to deactivate account: " + e.getMessage());
-        }
-    }
-
-    // ========== User Approvals (Admin operations) ==========
-
-    @GetMapping("/api/admin/user-approvals/pending")
-    public List<NewUserApproval> getPendingApprovals() {
-        return userService.getAllPendingUserApprovals();
-    }
-
-    @PostMapping("/api/admin/user-approvals/{approvalId}/approve")
-    public String approveUser(@PathVariable Long approvalId, @RequestParam Long adminId) {
-        User user = userService.approveUserRegistration(approvalId, adminId);
-        return "User approved successfully. User ID: " + user.getId();
-    }
-
-    @PostMapping("/api/admin/user-approvals/{approvalId}/reject")
-    public String rejectUser(@PathVariable Long approvalId,
-            @RequestParam Long adminId,
-            @RequestParam String reason) {
-        userService.rejectUserRegistration(approvalId, adminId, reason);
-        return "User registration rejected. Reason: " + reason;
-    }
-
-    @GetMapping("/api/admin/user-approvals/{approvalId}")
-    public NewUserApproval getApprovalById(@PathVariable Long approvalId) {
-        return userService.getApprovalById(approvalId);
-    }
-
-    @GetMapping("/api/admin/user-approvals/by-email")
-    public NewUserApproval getApprovalByEmail(@RequestParam String email) {
-        return userService.getApprovalByEmail(email);
+    public ApiResponse<Void> deactivateAccount(@PathVariable Long userId) {
+        userService.deactivateAccount(userId);
+        return ApiResponse.success("Account deactivated successfully");
     }
 }

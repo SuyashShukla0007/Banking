@@ -4,6 +4,8 @@ import java.util.List;
 import java.time.LocalDateTime;
 import com.example.bank.DTO.Account.AccountStatement;
 import com.example.bank.model.Transaction;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 /**
@@ -73,5 +75,13 @@ public class TransactionService {
 
     public List<Transaction> getAllTransactions() {
         return transactionQueryService.getAllTransactions();
+    }
+
+    public Page<Transaction> getAllTransactions(Pageable pageable) {
+        return transactionQueryService.getAllTransactions(pageable);
+    }
+
+    public Page<Transaction> getTransactionHistory(Long accountId, Pageable pageable) {
+        return transactionQueryService.getTransactionHistory(accountId, pageable);
     }
 }

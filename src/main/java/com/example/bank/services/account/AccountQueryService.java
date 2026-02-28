@@ -1,7 +1,10 @@
 package com.example.bank.services.account;
 
+import com.example.bank.exception.ResourceNotFoundException;
 import com.example.bank.model.Account;
 import com.example.bank.repo.AccountRepo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -40,6 +43,10 @@ public class AccountQueryService {
         return accountRepo.findAll();
     }
 
+    public Page<Account> getAllAccounts(Pageable pageable) {
+        return accountRepo.findAll(pageable);
+    }
+
     /**
      * Get account by ID
      * 
@@ -48,7 +55,7 @@ public class AccountQueryService {
      */
     public Account getAccountById(Long accountId) {
         return accountRepo.findById(accountId)
-                .orElseThrow(() -> new RuntimeException("Account not found with ID: " + accountId));
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with ID: " + accountId));
     }
 
     /**
@@ -59,7 +66,7 @@ public class AccountQueryService {
      */
     public Double getAccountBalance(Long accountId) {
         Account account = accountRepo.findById(accountId)
-                .orElseThrow(() -> new RuntimeException("Account not found with ID: " + accountId));
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with ID: " + accountId));
         return account.getBalance();
     }
 }

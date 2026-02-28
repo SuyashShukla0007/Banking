@@ -1,5 +1,8 @@
 package com.example.bank.model;
 
+import com.example.bank.enums.AccountType;
+import com.example.bank.enums.ApprovalStatus;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,13 +22,16 @@ public class AccountApproval {
     private Long id;
 
     @ManyToOne(optional = false)
+    @JsonIgnoreProperties({ "accounts", "accountApprovals", "password" })
     private User user; // requester
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String accountType; // SAVINGS, CURRENT
+    private AccountType accountType;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status; // PENDING, APPROVED, REJECTED
+    private ApprovalStatus status;
 
     @Column(nullable = false)
     private LocalDateTime requestedAt;
@@ -34,7 +40,7 @@ public class AccountApproval {
 
     private Long branchId;
 
-    //rejection reason
+    // rejection reason
     private String rejectionReason;
 
 }

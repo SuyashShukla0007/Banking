@@ -1,5 +1,7 @@
 package com.example.bank.model;
 
+import com.example.bank.enums.TransactionType;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,15 +24,18 @@ public class Transaction {
     // Source account (for WITHDRAWAL and TRANSFER; null for DEPOSIT)
     @ManyToOne(optional = true)
     @JoinColumn(name = "from_account_id", nullable = true)
+    @JsonIgnoreProperties({ "user", "branch" })
     private Account fromAccount;
 
     // Destination account (for DEPOSIT and TRANSFER; null for WITHDRAWAL)
     @ManyToOne(optional = true)
     @JoinColumn(name = "to_account_id", nullable = true)
+    @JsonIgnoreProperties({ "user", "branch" })
     private Account toAccount;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String type; // DEPOSIT, WITHDRAWAL, TRANSFER
+    private TransactionType type;
 
     @Column(nullable = false)
     private BigDecimal amount;
@@ -47,7 +52,7 @@ public class Transaction {
     private String statement;
 
     // Constructor for creating transactions
-    public Transaction(Account fromAccount, Account toAccount, Double amount, String type) {
+    public Transaction(Account fromAccount, Account toAccount, Double amount, TransactionType type) {
         this.fromAccount = fromAccount;
         this.toAccount = toAccount;
         this.amount = BigDecimal.valueOf(amount);

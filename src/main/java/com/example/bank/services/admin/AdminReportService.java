@@ -17,6 +17,7 @@ public class AdminReportService {
     private final UserRepository userRepository;
     private final AccountRepo accountRepo;
 
+    
     public AdminReportService(TransactionRepo transactionRepo, UserRepository userRepository,
             AccountRepo accountRepo) {
         this.transactionRepo = transactionRepo;

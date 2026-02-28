@@ -3,6 +3,8 @@ package com.example.bank.services.account;
 import com.example.bank.DTO.Account.AccountCreation;
 import com.example.bank.model.Account;
 import com.example.bank.model.AccountApproval;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -44,6 +46,10 @@ public class AccountService {
 
     public List<Account> getAllAccounts() {
         return accountQueryService.getAllAccounts();
+    }
+
+    public Page<Account> getAllAccounts(Pageable pageable) {
+        return accountQueryService.getAllAccounts(pageable);
     }
 
     public Account getAccountById(Long accountId) {

@@ -1,11 +1,15 @@
 package com.example.bank.services.admin;
 
+import com.example.bank.enums.AccountStatus;
+import com.example.bank.enums.UserStatus;
 import com.example.bank.model.Account;
 import com.example.bank.model.User;
 import com.example.bank.repo.AccountRepo;
 import com.example.bank.repo.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +29,10 @@ public class AdminUserManagementService {
         return userRepository.findAll();
     }
 
+    public Page<User> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable);
+    }
+
     public User getUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with ID " + userId + " not found"));
@@ -35,10 +43,10 @@ public class AdminUserManagementService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with ID " + userId + " not found"));
 
-        user.setStatus("SUSPENDED");
+        user.setStatus(UserStatus.SUSPENDED);
 
         List<Account> accounts = accountRepo.findByUserId(userId);
-        accounts.forEach(acc -> acc.setStatus("SUSPENDED"));
+        accounts.forEach(acc -> acc.setStatus(AccountStatus.SUSPENDED));
 
         accountRepo.saveAll(accounts);
         userRepository.save(user);
@@ -49,12 +57,12 @@ public class AdminUserManagementService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with ID " + userId + " not found"));
 
-        user.setStatus("ACTIVE");
+        user.setStatus(UserStatus.ACTIVE);
 
         List<Account> accounts = accountRepo.findByUserId(userId);
         accounts.forEach(acc -> {
-            if ("SUSPENDED".equals(acc.getStatus())) {
-                acc.setStatus("ACTIVE");
+            if (AccountStatus.SUSPENDED == acc.getStatus()) {
+                acc.setStatus(AccountStatus.ACTIVE);
             }
         });
 

@@ -1,18 +1,21 @@
 package com.example.bank.model;
 
-import java.util.List;
-
-import jakarta.persistence.CascadeType;
+import com.example.bank.enums.ApprovalStatus;
+import com.example.bank.enums.UserRole;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -31,10 +34,33 @@ public class NewUserApproval {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role = "USER";
+    private UserRole role = UserRole.USER;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ApprovalStatus status = ApprovalStatus.PENDING;
+
+    @Column(nullable = false)
+    private LocalDateTime requestedAt;
+
+    private LocalDateTime reviewedAt;
+
+    private String rejectionReason;
+
+    /**
+     * Automatically set requestedAt before persisting.
+     */
+    @jakarta.persistence.PrePersist
+    protected void onCreate() {
+        this.requestedAt = LocalDateTime.now();
+        if (this.status == null) {
+            this.status = ApprovalStatus.PENDING;
+        }
+    }
 }

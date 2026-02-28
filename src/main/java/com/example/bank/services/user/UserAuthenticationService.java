@@ -1,5 +1,7 @@
 package com.example.bank.services.user;
 
+import com.example.bank.exception.InvalidPasswordException;
+import com.example.bank.exception.ResourceNotFoundException;
 import com.example.bank.model.User;
 import com.example.bank.repo.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,10 +28,10 @@ public class UserAuthenticationService {
 
     public Long login(String email, String password) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Email not registered"));
+                .orElseThrow(() -> new InvalidPasswordException("Invalid credentials"));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new InvalidPasswordException("Invalid credentials");
         }
 
         return user.getId();
@@ -41,10 +43,10 @@ public class UserAuthenticationService {
     @Transactional
     public void changePassword(Long userId, String oldPassword, String newPassword) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new RuntimeException("Old password is incorrect");
+            throw new InvalidPasswordException("Old password is incorrect");
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));

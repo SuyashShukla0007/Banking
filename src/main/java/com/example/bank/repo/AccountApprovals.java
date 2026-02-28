@@ -1,5 +1,6 @@
 package com.example.bank.repo;
 
+import com.example.bank.enums.ApprovalStatus;
 import com.example.bank.model.AccountApproval;
 
 import java.util.List;
@@ -11,5 +12,5 @@ import org.springframework.stereotype.Repository;
 public interface AccountApprovals extends JpaRepository<AccountApproval, Long> {
     List<AccountApproval> findByUserId(Long userId);
 
-    List<AccountApproval> findByStatus(String status);
+    List<AccountApproval> findByStatus(ApprovalStatus status);
 }

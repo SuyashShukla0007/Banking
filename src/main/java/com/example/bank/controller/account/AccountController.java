@@ -1,9 +1,14 @@
 package com.example.bank.controller.account;
 
 import com.example.bank.DTO.Account.AccountCreation;
+import com.example.bank.DTO.response.ApiResponse;
 import com.example.bank.model.Account;
 import com.example.bank.model.AccountApproval;
 import com.example.bank.services.account.AccountService;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,73 +25,80 @@ public class AccountController {
     // ========== Account CRUD ==========
 
     @PostMapping("/accounts/create/{userId}")
-    public Account createAccount(@RequestBody AccountCreation accountCreation,
+    public ApiResponse<Account> createAccount(@Valid @RequestBody AccountCreation accountCreation,
             @PathVariable Long userId) {
-        return accountService.createAccount(accountCreation, userId);
+        Account account = accountService.createAccount(accountCreation, userId);
+        return ApiResponse.success("Account created successfully", account);
     }
 
     @GetMapping("/accounts/user/{userId}")
-    public List<Long> getAccounts(@PathVariable Long userId) {
-        return accountService.getAccounts(userId);
+    public ApiResponse<List<Long>> getAccounts(@PathVariable Long userId) {
+        List<Long> accountIds = accountService.getAccounts(userId);
+        return ApiResponse.success("User accounts fetched", accountIds);
     }
 
     @GetMapping("/accounts/all")
-    public List<Account> getAllAccounts() {
-        return accountService.getAllAccounts();
+    public ApiResponse<Page<Account>> getAllAccounts(@PageableDefault(size = 20) Pageable pageable) {
+        Page<Account> accounts = accountService.getAllAccounts(pageable);
+        return ApiResponse.success("All accounts fetched", accounts);
     }
 
     @GetMapping("/accounts/{accountId}")
-    public Account getAccountById(@PathVariable Long accountId) {
-        return accountService.getAccountById(accountId);
+    public ApiResponse<Account> getAccountById(@PathVariable Long accountId) {
+        Account account = accountService.getAccountById(accountId);
+        return ApiResponse.success("Account fetched", account);
     }
 
     @GetMapping("/accounts/{accountId}/balance")
-    public Double getAccountBalance(@PathVariable Long accountId) {
-        return accountService.getAccountBalance(accountId);
+    public ApiResponse<Double> getAccountBalance(@PathVariable Long accountId) {
+        Double balance = accountService.getAccountBalance(accountId);
+        return ApiResponse.success("Balance fetched", balance);
     }
 
     // ========== Account Status ==========
 
     @PutMapping("/account-status/{accountId}/activate")
-    public String activateAccount(@PathVariable Long accountId, @RequestParam Long adminId) {
+    public ApiResponse<Void> activateAccount(@PathVariable Long accountId, @RequestParam Long adminId) {
         accountService.reactivateAccount(accountId, adminId);
-        return "Account activated successfully";
+        return ApiResponse.success("Account activated successfully");
     }
 
     @PutMapping("/account-status/{accountId}/suspend")
-    public String suspendAccount(@PathVariable Long accountId, @RequestParam Long adminId) {
+    public ApiResponse<Void> suspendAccount(@PathVariable Long accountId, @RequestParam Long adminId) {
         accountService.suspendAccount(accountId, adminId);
-        return "Account suspended successfully";
+        return ApiResponse.success("Account suspended successfully");
     }
 
     @PutMapping("/account-status/{accountId}/close")
-    public String closeAccount(@PathVariable Long accountId, @RequestParam Long adminId) {
+    public ApiResponse<Void> closeAccount(@PathVariable Long accountId, @RequestParam Long adminId) {
         accountService.closeAccount(accountId, adminId);
-        return "Account closed successfully";
+        return ApiResponse.success("Account closed successfully");
     }
 
     // ========== Account Approvals ==========
 
     @GetMapping("/account-approvals/pending")
-    public List<AccountApproval> getPendingApprovals() {
-        return accountService.getAllPendingApprovals();
+    public ApiResponse<List<AccountApproval>> getPendingApprovals() {
+        List<AccountApproval> approvals = accountService.getAllPendingApprovals();
+        return ApiResponse.success("Pending approvals fetched", approvals);
     }
 
     @GetMapping("/account-approvals/{approvalId}")
-    public AccountApproval getApprovalById(@PathVariable Long approvalId) {
-        return accountService.getApprovalById(approvalId);
+    public ApiResponse<AccountApproval> getApprovalById(@PathVariable Long approvalId) {
+        AccountApproval approval = accountService.getApprovalById(approvalId);
+        return ApiResponse.success("Approval fetched", approval);
     }
 
     @PostMapping("/account-approvals/{approvalId}/approve")
-    public String approveAccountRequest(@PathVariable Long approvalId, @RequestParam Long adminId) {
+    public ApiResponse<Void> approveAccountRequest(@PathVariable Long approvalId, @RequestParam Long adminId) {
         accountService.approveAccountRequest(approvalId, adminId);
-        return "Account approval request approved successfully";
+        return ApiResponse.success("Account approval request approved successfully");
     }
 
     @PostMapping("/account-approvals/{approvalId}/reject")
-    public String rejectAccountRequest(@PathVariable Long approvalId, @RequestParam Long adminId,
+    public ApiResponse<Void> rejectAccountRequest(@PathVariable Long approvalId, @RequestParam Long adminId,
             @RequestParam String reason) {
         accountService.rejectAccountRequest(approvalId, adminId, reason);
-        return "Account approval request rejected";
+        return ApiResponse.success("Account approval request rejected");
     }
 }

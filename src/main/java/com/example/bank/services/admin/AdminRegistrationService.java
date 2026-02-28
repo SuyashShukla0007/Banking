@@ -21,7 +21,7 @@ public class AdminRegistrationService {
 
     @Transactional
     public Admin createAdmin(AdminRegisterRequest request) {
-        if (!adminRepo.findByEmail(request.getEmail()).isEmpty()) {
+        if (adminRepo.findByEmail(request.getEmail()).isPresent()) {
             throw new DuplicateEmailException("Admin with email '" + request.getEmail() + "' already exists");
         }
 

@@ -1,5 +1,6 @@
 package com.example.bank.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import lombok.Getter;
@@ -33,6 +34,7 @@ public class BankBranch {
     @Column(nullable = false)
     private String address;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "branch")
     private List<Account> accounts;
 }

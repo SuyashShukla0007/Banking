@@ -2,8 +2,10 @@ package com.example.bank.controller.account;
 
 import com.example.bank.DTO.Branch.BranchCreateRequest;
 import com.example.bank.DTO.Branch.BranchUpdateRequest;
+import com.example.bank.DTO.response.ApiResponse;
 import com.example.bank.model.BankBranch;
 import com.example.bank.utility.BranchService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,35 +21,38 @@ public class BranchController {
     }
 
     @PostMapping("/create")
-    public String createBranch(@RequestBody BranchCreateRequest request) {
+    public ApiResponse<Void> createBranch(@Valid @RequestBody BranchCreateRequest request) {
         branchService.createBranch(
                 request.getBranchName(),
                 request.getBranchCode(),
                 request.getAddress(),
                 request.getCity(),
                 request.getState());
-        return "Branch created successfully";
+        return ApiResponse.success("Branch created successfully");
     }
 
     @GetMapping("/all")
-    public List<BankBranch> getAllBranches() {
-        return branchService.getAllBranches();
+    public ApiResponse<List<BankBranch>> getAllBranches() {
+        List<BankBranch> branches = branchService.getAllBranches();
+        return ApiResponse.success("All branches fetched", branches);
     }
 
     @GetMapping("/{branchId}")
-    public BankBranch getBranchById(@PathVariable Long branchId) {
-        return branchService.getBranchById(branchId);
+    public ApiResponse<BankBranch> getBranchById(@PathVariable Long branchId) {
+        BankBranch branch = branchService.getBranchById(branchId);
+        return ApiResponse.success("Branch fetched", branch);
     }
 
     @PutMapping("/{branchId}")
-    public BankBranch updateBranch(@PathVariable Long branchId, @RequestBody BranchUpdateRequest request) {
+    public ApiResponse<BankBranch> updateBranch(@PathVariable Long branchId, @RequestBody BranchUpdateRequest request) {
         request.setBranchId(branchId);
-        return branchService.updateBranch(request);
+        BankBranch branch = branchService.updateBranch(request);
+        return ApiResponse.success("Branch updated successfully", branch);
     }
 
     @DeleteMapping("/{branchId}")
-    public String deleteBranch(@PathVariable Long branchId) {
+    public ApiResponse<Void> deleteBranch(@PathVariable Long branchId) {
         branchService.deleteBranch(branchId);
-        return "Branch deleted successfully";
+        return ApiResponse.success("Branch deleted successfully");
     }
 }

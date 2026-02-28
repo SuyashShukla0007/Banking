@@ -1,6 +1,7 @@
 package com.example.bank.services.admin;
 
 import com.example.bank.exception.InvalidPasswordException;
+import com.example.bank.exception.ResourceNotFoundException;
 import com.example.bank.model.Admin;
 import com.example.bank.repo.AdminRepo;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,12 +21,10 @@ public class AdminAuthenticationService {
 
     public Long login(String email, String password) {
         Admin admin = adminRepo.findByEmail(email)
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+                .orElseThrow(() -> new InvalidPasswordException("Invalid credentials"));
 
         if (!passwordEncoder.matches(password, admin.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new InvalidPasswordException("Invalid credentials");
         }
 
         return admin.getId();
@@ -33,7 +32,7 @@ public class AdminAuthenticationService {
 
     public void changePassword(Long adminId, String oldPassword, String newPassword) {
         Admin admin = adminRepo.findById(adminId)
-                .orElseThrow(() -> new EntityNotFoundException("Admin with ID " + adminId + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Admin with ID " + adminId + " not found"));
 
         if (!passwordEncoder.matches(oldPassword, admin.getPassword())) {
             throw new InvalidPasswordException("Old password is incorrect");

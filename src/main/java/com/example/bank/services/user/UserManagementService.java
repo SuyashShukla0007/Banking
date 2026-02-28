@@ -1,5 +1,9 @@
 package com.example.bank.services.user;
 
+import com.example.bank.enums.AccountStatus;
+import com.example.bank.enums.UserStatus;
+import com.example.bank.exception.DuplicateEmailException;
+import com.example.bank.exception.ResourceNotFoundException;
 import com.example.bank.model.Account;
 import com.example.bank.model.User;
 import com.example.bank.repo.AccountRepo;
@@ -37,11 +41,11 @@ public class UserManagementService {
     @Transactional
     public void updateUserProfile(Long userId, String name, String email) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
         if (email != null && !email.equals(user.getEmail())) {
             if (userRepository.findByEmail(email).isPresent()) {
-                throw new RuntimeException("Email already in use by another user");
+                throw new DuplicateEmailException("Email already in use by another user");
             }
             user.setEmail(email);
         }
@@ -59,13 +63,13 @@ public class UserManagementService {
     @Transactional
     public void deactivateAccount(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("No user exists with this UserId"));
+                .orElseThrow(() -> new ResourceNotFoundException("No user exists with this UserId"));
 
-        user.setStatus("DEACTIVATED");
+        user.setStatus(UserStatus.DEACTIVATED);
 
         List<Account> accounts = accountRepo.findByUserId(userId);
         for (Account account : accounts) {
-            account.setStatus("INACTIVE");
+            account.setStatus(AccountStatus.INACTIVE);
         }
 
         accountRepo.saveAll(accounts);

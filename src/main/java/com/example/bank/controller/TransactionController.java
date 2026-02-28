@@ -3,11 +3,14 @@ package com.example.bank.controller;
 import com.example.bank.DTO.Transaction.DepositRequest;
 import com.example.bank.DTO.Transaction.TransferRequest;
 import com.example.bank.DTO.Transaction.WithdrawRequest;
+import com.example.bank.DTO.response.ApiResponse;
 import com.example.bank.model.Transaction;
 import com.example.bank.services.account.TransactionService;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/transactions")
@@ -20,35 +23,40 @@ public class TransactionController {
     }
 
     @PostMapping("/deposit")
-    public String deposit(@RequestBody DepositRequest request) {
+    public ApiResponse<Void> deposit(@Valid @RequestBody DepositRequest request) {
         transactionService.deposit(request.getAccountId(), request.getAmount());
-        return "Deposit successful";
+        return ApiResponse.success("Deposit successful");
     }
 
     @PostMapping("/withdraw")
-    public String withdraw(@RequestBody WithdrawRequest request) {
+    public ApiResponse<Void> withdraw(@Valid @RequestBody WithdrawRequest request) {
         transactionService.withdraw(request.getAccountId(), request.getAmount());
-        return "Withdrawal successful";
+        return ApiResponse.success("Withdrawal successful");
     }
 
     @PostMapping("/transfer")
-    public String transfer(@RequestBody TransferRequest request) {
+    public ApiResponse<Void> transfer(@Valid @RequestBody TransferRequest request) {
         transactionService.transfer(request.getFromAccountId(), request.getToAccountId(), request.getAmount());
-        return "Transfer successful";
+        return ApiResponse.success("Transfer successful");
     }
 
     @GetMapping("/{accountId}/history")
-    public List<Transaction> getTransactionHistory(@PathVariable Long accountId) {
-        return transactionService.getTransactionHistory(accountId);
+    public ApiResponse<Page<Transaction>> getTransactionHistory(
+            @PathVariable Long accountId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<Transaction> transactions = transactionService.getTransactionHistory(accountId, pageable);
+        return ApiResponse.success("Transaction history fetched", transactions);
     }
 
     @GetMapping("/{transactionId}")
-    public Transaction getTransactionById(@PathVariable Long transactionId) {
-        return transactionService.getTransactionById(transactionId);
+    public ApiResponse<Transaction> getTransactionById(@PathVariable Long transactionId) {
+        Transaction transaction = transactionService.getTransactionById(transactionId);
+        return ApiResponse.success("Transaction fetched", transaction);
     }
 
     @GetMapping("/all")
-    public List<Transaction> getAllTransactions() {
-        return transactionService.getAllTransactions();
+    public ApiResponse<Page<Transaction>> getAllTransactions(@PageableDefault(size = 20) Pageable pageable) {
+        Page<Transaction> transactions = transactionService.getAllTransactions(pageable);
+        return ApiResponse.success("All transactions fetched", transactions);
     }
 }

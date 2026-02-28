@@ -1,12 +1,13 @@
 package com.example.bank.model;
 
+import com.example.bank.enums.AccountStatus;
+import com.example.bank.enums.AccountType;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
 
 @Entity
 @Getter
@@ -21,8 +22,9 @@ public class Account {
     @Column(nullable = false, unique = true)
     private String accountNumber;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String accountType;
+    private AccountType accountType;
 
     // @Column(nullable = false)
     // private double interestRate;
@@ -35,12 +37,15 @@ public class Account {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({ "accounts", "accountApprovals", "password" })
     private User user;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;
+    private AccountStatus status;
 
     @ManyToOne
     @JoinColumn(name = "branch_id", nullable = false)
+    @JsonIgnoreProperties("accounts")
     private BankBranch branch;
 }

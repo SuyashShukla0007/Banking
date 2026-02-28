@@ -1,5 +1,7 @@
 package com.example.bank.services.admin;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -8,8 +10,10 @@ import com.example.bank.DTO.Admin.AdminUpdateRequest;
 import com.example.bank.DTO.SystemReportDTO;
 import com.example.bank.model.Account;
 import com.example.bank.model.Admin;
+import com.example.bank.model.NewUserApproval;
 import com.example.bank.model.Transaction;
 import com.example.bank.model.User;
+import com.example.bank.services.user.NewUserApprovalService;
 
 /**
  * Facade service that delegates to specialized admin sub-services.
@@ -24,6 +28,7 @@ public class AdminService {
     private final AdminManagementService adminManagementService;
     private final AdminUserManagementService adminUserManagementService;
     private final AdminReportService adminReportService;
+    private final NewUserApprovalService newUserApprovalService;
 
     public AdminService(
             AdminRegistrationService adminRegistrationService,
@@ -31,13 +36,15 @@ public class AdminService {
             AdminQueryService adminQueryService,
             AdminManagementService adminManagementService,
             AdminUserManagementService adminUserManagementService,
-            AdminReportService adminReportService) {
+            AdminReportService adminReportService,
+            NewUserApprovalService newUserApprovalService) {
         this.adminRegistrationService = adminRegistrationService;
         this.adminAuthenticationService = adminAuthenticationService;
         this.adminQueryService = adminQueryService;
         this.adminManagementService = adminManagementService;
         this.adminUserManagementService = adminUserManagementService;
         this.adminReportService = adminReportService;
+        this.newUserApprovalService = newUserApprovalService;
     }
 
     // ========== Registration ==========
@@ -78,6 +85,10 @@ public class AdminService {
         return adminUserManagementService.getAllUsers();
     }
 
+    public Page<User> getAllUsers(Pageable pageable) {
+        return adminUserManagementService.getAllUsers(pageable);
+    }
+
     public User getUserById(Long userId) {
         return adminUserManagementService.getUserById(userId);
     }
@@ -102,5 +113,27 @@ public class AdminService {
 
     public SystemReportDTO generateSystemReport() {
         return adminReportService.generateSystemReport();
+    }
+
+    // ========== User Registration Approvals ==========
+
+    public List<NewUserApproval> getAllPendingUserApprovals() {
+        return newUserApprovalService.getAllPendingUserApprovals();
+    }
+
+    public User approveUserRegistration(Long approvalId, Long adminId) {
+        return newUserApprovalService.approveUserRegistration(approvalId, adminId);
+    }
+
+    public void rejectUserRegistration(Long approvalId, Long adminId, String reason) {
+        newUserApprovalService.rejectUserRegistration(approvalId, adminId, reason);
+    }
+
+    public NewUserApproval getUserApprovalById(Long approvalId) {
+        return newUserApprovalService.getApprovalById(approvalId);
+    }
+
+    public NewUserApproval getUserApprovalByEmail(String email) {
+        return newUserApprovalService.getApprovalByEmail(email);
     }
 }
