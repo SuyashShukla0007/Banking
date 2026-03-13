@@ -8,14 +8,7 @@ import java.math.BigDecimal;
 
 import jakarta.persistence.Version;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
 public class Account {
 
     @Id
@@ -54,6 +47,9 @@ public class Account {
 
     @Version
     private Long version;
+
+    public Account() {
+    }
 
     public Long getId() {
         return id;

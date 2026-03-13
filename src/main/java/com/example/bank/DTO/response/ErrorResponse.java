@@ -1,8 +1,6 @@
 package com.example.bank.DTO.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -11,8 +9,6 @@ import java.util.Map;
  * Standard error response for exception handling.
  * Used by GlobalExceptionHandler to return structured error details.
  */
-@Getter
-@Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorResponse {
 
@@ -38,6 +34,46 @@ public class ErrorResponse {
         this.error = error;
         this.message = message;
         this.timestamp = LocalDateTime.now();
+        this.validationErrors = validationErrors;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public Map<String, String> getValidationErrors() {
+        return validationErrors;
+    }
+
+    public void setValidationErrors(Map<String, String> validationErrors) {
         this.validationErrors = validationErrors;
     }
 }

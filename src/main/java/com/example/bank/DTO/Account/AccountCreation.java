@@ -2,11 +2,7 @@ package com.example.bank.DTO.Account;
 
 import com.example.bank.enums.AccountType;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
 public class AccountCreation {
 
     @NotNull(message = "Account type is required")

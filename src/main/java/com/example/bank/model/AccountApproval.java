@@ -4,15 +4,9 @@ import com.example.bank.enums.AccountType;
 import com.example.bank.enums.ApprovalStatus;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Getter
-@NoArgsConstructor
-@Setter
 @Entity
 @Table(name = "account_approvals")
 public class AccountApproval {
@@ -42,6 +36,9 @@ public class AccountApproval {
 
     // rejection reason
     private String rejectionReason;
+
+    public AccountApproval() {
+    }
 
     public Long getId() {
         return id;

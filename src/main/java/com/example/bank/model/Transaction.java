@@ -4,17 +4,11 @@ import com.example.bank.enums.TransactionType;
 import com.example.bank.enums.TransactionStatus;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
 @Table(name = "transactions")
 public class Transaction {
 
@@ -54,6 +48,9 @@ public class Transaction {
 
     @Enumerated(EnumType.STRING)
     private TransactionStatus status;
+
+    public Transaction() {
+    }
 
     // Constructor for creating transactions
     public Transaction(Account fromAccount, Account toAccount, Double amount, TransactionType type) {

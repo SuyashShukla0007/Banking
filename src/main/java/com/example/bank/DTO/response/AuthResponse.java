@@ -1,8 +1,5 @@
 package com.example.bank.DTO.response;
 
-import lombok.Getter;
-
-@Getter
 public class AuthResponse {
     private String token;
     private String role;
