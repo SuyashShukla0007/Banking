@@ -1,6 +1,7 @@
 package com.example.bank.services.account;
 
 import com.example.bank.DTO.Account.AccountCreation;
+import com.example.bank.exception.InvalidOperationException;
 import com.example.bank.model.Account;
 import com.example.bank.model.AccountApproval;
 import org.springframework.data.domain.Page;
@@ -35,7 +36,7 @@ public class AccountService {
     // ========== Creation ==========
 
     public Account createAccount(AccountCreation accountCreation, Long userID) {
-        return accountCreationService.createAccount(accountCreation, userID);
+        throw new InvalidOperationException("Direct account creation is disabled. Use the approval flow instead.");
     }
 
     // ========== Query ==========
@@ -80,8 +81,10 @@ public class AccountService {
 
     // ========== Approvals ==========
 
-    public void requestAccountApproval(Long userId, String accountType) {
-        accountApprovalService.requestAccountApproval(userId, accountType);
+    public com.example.bank.model.AccountApproval requestAccountApproval(
+            com.example.bank.DTO.Account.AccountCreation accountCreation, Long userId) {
+        return accountApprovalService.requestAccountApproval(userId, accountCreation.getAccountType(),
+                accountCreation.getBranchId());
     }
 
     public List<AccountApproval> getAllPendingApprovals() {

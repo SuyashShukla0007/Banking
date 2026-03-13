@@ -67,6 +67,6 @@ public class AccountQueryService {
     public Double getAccountBalance(Long accountId) {
         Account account = accountRepo.findById(accountId)
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found with ID: " + accountId));
-        return account.getBalance();
+        return account.getBalance().doubleValue();
     }
 }

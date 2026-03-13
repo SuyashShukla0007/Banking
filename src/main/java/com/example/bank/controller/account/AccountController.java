@@ -25,10 +25,10 @@ public class AccountController {
     // ========== Account CRUD ==========
 
     @PostMapping("/accounts/create/{userId}")
-    public ApiResponse<Account> createAccount(@Valid @RequestBody AccountCreation accountCreation,
+    public ApiResponse<AccountApproval> createAccount(@Valid @RequestBody AccountCreation accountCreation,
             @PathVariable Long userId) {
-        Account account = accountService.createAccount(accountCreation, userId);
-        return ApiResponse.success("Account created successfully", account);
+        AccountApproval approval = accountService.requestAccountApproval(accountCreation, userId);
+        return ApiResponse.success("Account creation requested for admin approval", approval);
     }
 
     @GetMapping("/accounts/user/{userId}")

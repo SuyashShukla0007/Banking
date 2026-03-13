@@ -17,7 +17,6 @@ public class AdminReportService {
     private final UserRepository userRepository;
     private final AccountRepo accountRepo;
 
-    
     public AdminReportService(TransactionRepo transactionRepo, UserRepository userRepository,
             AccountRepo accountRepo) {
         this.transactionRepo = transactionRepo;
@@ -36,7 +35,7 @@ public class AdminReportService {
 
         List<Account> accounts = accountRepo.findAll();
         double totalBalance = accounts.stream()
-                .mapToDouble(Account::getBalance)
+                .mapToDouble(a -> a.getBalance().doubleValue())
                 .sum();
 
         return new SystemReportDTO(totalUsers, totalAccounts, totalTransactions, totalBalance);

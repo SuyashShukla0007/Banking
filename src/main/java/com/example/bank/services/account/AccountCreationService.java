@@ -53,8 +53,8 @@ public class AccountCreationService {
 
         // Create new account object
         Account account = new Account();
-        account.setAccountType(AccountType.valueOf(accountCreation.getAccountType()));
-        account.setBalance(0.0);
+        account.setAccountType(accountCreation.getAccountType());
+        account.setBalance(java.math.BigDecimal.valueOf(500));
         account.setAccountNumber(accountNumber);
         account.setUser(user);
         account.setStatus(AccountStatus.ACTIVE);

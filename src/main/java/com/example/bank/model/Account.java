@@ -4,6 +4,9 @@ import com.example.bank.enums.AccountStatus;
 import com.example.bank.enums.AccountType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import java.math.BigDecimal;
+
+import jakarta.persistence.Version;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,8 +32,8 @@ public class Account {
     // @Column(nullable = false)
     // private double interestRate;
 
-    @Column(nullable = false)
-    private double balance;
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal balance = BigDecimal.ZERO;
 
     @Column(nullable = false)
     private long last4AccountNumber;
@@ -48,4 +51,7 @@ public class Account {
     @JoinColumn(name = "branch_id", nullable = false)
     @JsonIgnoreProperties("accounts")
     private BankBranch branch;
+
+    @Version
+    private Long version;
 }

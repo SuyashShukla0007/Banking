@@ -7,7 +7,8 @@ import com.example.bank.exception.InvalidOperationException;
 import com.example.bank.exception.ResourceAlreadyExistsException;
 import com.example.bank.exception.ResourceNotFoundException;
 import com.example.bank.exception.UnauthorizedAccessException;
-import com.example.bank.utility.GenerateAccountNumber;
+import com.example.bank.DTO.Account.AccountCreation;
+import com.example.bank.services.account.AccountCreationService;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -33,42 +34,32 @@ public class AccountApprovalService {
     private final AdminRepo adminRepo;
     private final AccountRepo accounts;
     private final BranchRepo branchRepo;
-    private final GenerateAccountNumber generateAccountNumber;
+    private final AccountCreationService accountCreationService;
 
     private static final List<AccountType> VALID_ACCOUNT_TYPES = Arrays.asList(AccountType.values());
 
     public AccountApprovalService(AccountApprovals accountApprovals, UserRepository userRepository,
             AdminRepo adminRepo, AccountRepo accounts, BranchRepo branchRepo,
-            GenerateAccountNumber generateAccountNumber) {
+            AccountCreationService accountCreationService) {
         this.accountApprovals = accountApprovals;
         this.userRepository = userRepository;
         this.adminRepo = adminRepo;
         this.accounts = accounts;
         this.branchRepo = branchRepo;
-        this.generateAccountNumber = generateAccountNumber;
+        this.accountCreationService = accountCreationService;
     }
 
     @Transactional
-    public void requestAccountApproval(Long userId, String accountType) {
-        // Validate account type
-        AccountType type;
-        try {
-            type = AccountType.valueOf(accountType);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(
-                    "Invalid account type. Must be one of: " + Arrays.asList(AccountType.values()));
-        }
+    public com.example.bank.model.AccountApproval requestAccountApproval(Long userId, AccountType accountType,
+            Long branchId) {
+        AccountType type = accountType;
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
-        // Check for existing pending approvals
-        List<AccountApproval> existingApprovals = accountApprovals.findByUserId(userId);
-        for (AccountApproval approval : existingApprovals) {
-            if (approval.getAccountType() == type && approval.getStatus() == ApprovalStatus.PENDING) {
-                throw new ResourceAlreadyExistsException(
-                        "User already has a pending approval for " + accountType + " account");
-            }
+        // Check for existing pending approvals (use repo-level exists if available)
+        if (accountApprovals.existsByUserIdAndAccountTypeAndStatus(userId, type, ApprovalStatus.PENDING)) {
+            throw new ResourceAlreadyExistsException("User already has a pending approval for " + type + " account");
         }
 
         // Check if user already has this account type
@@ -84,7 +75,8 @@ public class AccountApprovalService {
         newApproval.setAccountType(type);
         newApproval.setStatus(ApprovalStatus.PENDING);
         newApproval.setRequestedAt(LocalDateTime.now());
-        accountApprovals.save(newApproval);
+        newApproval.setBranchId(branchId);
+        return accountApprovals.save(newApproval);
     }
 
     public List<AccountApproval> getAllPendingApprovals() {
@@ -131,22 +123,13 @@ public class AccountApprovalService {
             }
         }
 
-        // Create new account
-        Account newAccount = new Account();
-        String accountNumber = generateAccountNumber.generate();
-        newAccount.setAccountNumber(accountNumber);
-        newAccount.setAccountType(approval.getAccountType());
-        newAccount.setBalance(0);
-        newAccount.setStatus(AccountStatus.ACTIVE);
-        newAccount.setUser(approval.getUser());
-        newAccount.setBranch(branch);
+        // Delegate actual account creation to AccountCreationService to centralize
+        // logic
+        AccountCreation accountCreation = new AccountCreation();
+        accountCreation.setAccountType(approval.getAccountType());
+        accountCreation.setBranchId(approval.getBranchId());
 
-        if (accountNumber.length() >= 4) {
-            newAccount.setLast4AccountNumber(
-                    Long.parseLong(accountNumber.substring(accountNumber.length() - 4)));
-        }
-
-        accounts.save(newAccount);
+        accountCreationService.createAccount(accountCreation, approval.getUser().getId());
 
         // Update approval with reviewer info
         approval.setStatus(ApprovalStatus.APPROVED);

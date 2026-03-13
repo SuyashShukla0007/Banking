@@ -29,7 +29,7 @@ public class AccountStatusService {
             throw new InvalidOperationException("Account is already closed");
         }
 
-        if (account.getBalance() != 0) {
+        if (account.getBalance().compareTo(java.math.BigDecimal.ZERO) != 0) {
             throw new InvalidOperationException("Cannot close account with non-zero balance: " + account.getBalance());
         }
 
@@ -83,7 +83,7 @@ public class AccountStatusService {
             throw new IllegalArgumentException("Invalid status. Must be ACTIVE, SUSPENDED, or CLOSED");
         }
 
-        if (AccountStatus.CLOSED == newStatus && account.getBalance() != 0) {
+        if (AccountStatus.CLOSED == newStatus && account.getBalance().compareTo(java.math.BigDecimal.ZERO) != 0) {
             throw new InvalidOperationException("Cannot close account with non-zero balance");
         }
 
