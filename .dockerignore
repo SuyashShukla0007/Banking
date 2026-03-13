@@ -1,0 +1,22 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+
+# Maven build output
+target
+
+# Logs
+*.log
+
+# Local env files
+.env
+.env.*
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
