@@ -10,6 +10,7 @@ import com.example.bank.model.Transaction;
 import com.example.bank.repo.AccountRepo;
 import com.example.bank.repo.TransactionRepo;
 import org.springframework.stereotype.Service;
+import java.math.BigDecimal;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -27,8 +28,9 @@ public class TransactionOperationService {
     }
 
     @Transactional
-    public void deposit(Long accountId, Double amount) {
-        if (amount <= 0) {
+    public com.example.bank.model.Transaction deposit(Long accountId, Double amount) {
+        BigDecimal amt = BigDecimal.valueOf(amount);
+        if (amt.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Deposit amount must be positive");
         }
 
@@ -39,18 +41,21 @@ public class TransactionOperationService {
             throw new InvalidOperationException("Cannot deposit to account with status: " + account.getStatus());
         }
 
-        account.setBalance(account.getBalance() + amount);
+        account.setBalance(account.getBalance().add(amt));
         accountRepo.save(account);
 
         Transaction transaction = new Transaction(null, account, amount, TransactionType.DEPOSIT);
         transaction.setDescription("Deposit to account " + accountId);
         transaction.setReferenceNumber("DEP-" + System.currentTimeMillis());
+        transaction.setStatus(com.example.bank.enums.TransactionStatus.SUCCESS);
         transactionRepo.save(transaction);
+        return transaction;
     }
 
     @Transactional
-    public void withdraw(Long accountId, Double amount) {
-        if (amount <= 0) {
+    public com.example.bank.model.Transaction withdraw(Long accountId, Double amount) {
+        BigDecimal amt = BigDecimal.valueOf(amount);
+        if (amt.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Withdrawal amount must be positive");
         }
 
@@ -61,23 +66,26 @@ public class TransactionOperationService {
             throw new InvalidOperationException("Cannot withdraw from account with status: " + account.getStatus());
         }
 
-        if (account.getBalance() < amount) {
+        if (account.getBalance().compareTo(amt) < 0) {
             throw new InsufficientBalanceException(
                     "Insufficient balance. Available: " + account.getBalance() + ", Requested: " + amount);
         }
 
-        account.setBalance(account.getBalance() - amount);
+        account.setBalance(account.getBalance().subtract(amt));
         accountRepo.save(account);
 
         Transaction transaction = new Transaction(account, null, amount, TransactionType.WITHDRAWAL);
         transaction.setDescription("Withdrawal from account " + accountId);
         transaction.setReferenceNumber("WD-" + System.currentTimeMillis());
+        transaction.setStatus(com.example.bank.enums.TransactionStatus.SUCCESS);
         transactionRepo.save(transaction);
+        return transaction;
     }
 
     @Transactional
-    public void transfer(Long fromAccountId, Long toAccountId, Double amount) {
-        if (amount <= 0) {
+    public com.example.bank.model.Transaction transfer(Long fromAccountId, Long toAccountId, Double amount) {
+        BigDecimal amt = BigDecimal.valueOf(amount);
+        if (amt.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Transfer amount must be positive");
         }
 
@@ -100,25 +108,28 @@ public class TransactionOperationService {
             throw new InvalidOperationException("Cannot transfer to account with status: " + toAccount.getStatus());
         }
 
-        if (fromAccount.getBalance() < amount) {
+        if (fromAccount.getBalance().compareTo(amt) < 0) {
             throw new InsufficientBalanceException(
                     "Insufficient balance. Available: " + fromAccount.getBalance() + ", Requested: " + amount);
         }
 
-        fromAccount.setBalance(fromAccount.getBalance() - amount);
-        toAccount.setBalance(toAccount.getBalance() + amount);
+        fromAccount.setBalance(fromAccount.getBalance().subtract(amt));
+        toAccount.setBalance(toAccount.getBalance().add(amt));
         accountRepo.save(fromAccount);
         accountRepo.save(toAccount);
 
         Transaction transaction = new Transaction(fromAccount, toAccount, amount, TransactionType.TRANSFER);
         transaction.setDescription("Transfer from account " + fromAccountId + " to account " + toAccountId);
         transaction.setReferenceNumber("TRF-" + System.currentTimeMillis());
+        transaction.setStatus(com.example.bank.enums.TransactionStatus.SUCCESS);
         transactionRepo.save(transaction);
+        return transaction;
     }
 
     @Transactional
-    public void transferBetweenOwnAccounts(Long userId, Long fromAccountId, Long toAccountId, Double amount) {
-        if (amount <= 0) {
+    public com.example.bank.model.Transaction transferBetweenOwnAccounts(Long userId, Long fromAccountId, Long toAccountId, Double amount) {
+        BigDecimal amt = BigDecimal.valueOf(amount);
+        if (amt.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Transfer amount must be positive");
         }
 
@@ -149,19 +160,21 @@ public class TransactionOperationService {
             throw new InvalidOperationException("Cannot transfer to account with status: " + toAccount.getStatus());
         }
 
-        if (fromAccount.getBalance() < amount) {
+        if (fromAccount.getBalance().compareTo(amt) < 0) {
             throw new InsufficientBalanceException(
                     "Insufficient balance. Available: " + fromAccount.getBalance() + ", Requested: " + amount);
         }
 
-        fromAccount.setBalance(fromAccount.getBalance() - amount);
-        toAccount.setBalance(toAccount.getBalance() + amount);
+        fromAccount.setBalance(fromAccount.getBalance().subtract(amt));
+        toAccount.setBalance(toAccount.getBalance().add(amt));
         accountRepo.save(fromAccount);
         accountRepo.save(toAccount);
 
         Transaction transaction = new Transaction(fromAccount, toAccount, amount, TransactionType.TRANSFER);
         transaction.setDescription("Transfer between own accounts");
         transaction.setReferenceNumber("OWN-" + System.currentTimeMillis());
+        transaction.setStatus(com.example.bank.enums.TransactionStatus.SUCCESS);
         transactionRepo.save(transaction);
+        return transaction;
     }
 }

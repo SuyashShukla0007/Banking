@@ -25,6 +25,12 @@ public class UserController {
         return ApiResponse.success("hello");
     }
 
+    @GetMapping("/users/{userId}")
+    public ApiResponse<User> getUser(@PathVariable Long userId) {
+        User user = userService.getUserById(userId);
+        return ApiResponse.success("User retrieved successfully", user);
+    }
+
     @PostMapping("/users/create")
     public ApiResponse<NewUserApproval> createUser(@Valid @RequestBody UserRegisterRequest request) {
         NewUserApproval approval = userService.createUser(request);

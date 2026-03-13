@@ -1,6 +1,7 @@
 package com.example.bank.model;
 
 import com.example.bank.enums.TransactionType;
+import com.example.bank.enums.TransactionStatus;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -51,6 +52,9 @@ public class Transaction {
     @Column
     private String statement;
 
+    @Enumerated(EnumType.STRING)
+    private TransactionStatus status;
+
     // Constructor for creating transactions
     public Transaction(Account fromAccount, Account toAccount, Double amount, TransactionType type) {
         this.fromAccount = fromAccount;
@@ -58,6 +62,7 @@ public class Transaction {
         this.amount = BigDecimal.valueOf(amount);
         this.type = type;
         this.timestamp = LocalDateTime.now();
+        this.status = TransactionStatus.SUCCESS;
     }
 
 }

@@ -10,7 +10,9 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.bank.DTO.Transaction.TransactionResponse;
 
 @RestController
 @RequestMapping("/transactions")
@@ -35,9 +37,11 @@ public class TransactionController {
     }
 
     @PostMapping("/transfer")
-    public ApiResponse<Void> transfer(@Valid @RequestBody TransferRequest request) {
-        transactionService.transfer(request.getFromAccountId(), request.getToAccountId(), request.getAmount());
-        return ApiResponse.success("Transfer successful");
+    public ResponseEntity<TransactionResponse> transfer(@Valid @RequestBody TransferRequest req) {
+        transactionService.transfer(req.getFromAccountId(), req.getToAccountId(), req.getAmount());
+        TransactionResponse resp = new TransactionResponse();
+        resp.setMessage("Transfer successful");
+        return ResponseEntity.ok(resp);
     }
 
     @GetMapping("/{accountId}/history")

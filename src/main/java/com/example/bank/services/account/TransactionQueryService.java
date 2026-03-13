@@ -49,12 +49,18 @@ public class TransactionQueryService {
 
     public Double getTotalDeposits(Long accountId) {
         List<Transaction> deposits = transactionRepo.findByAccountIdAndType(accountId, TransactionType.DEPOSIT);
-        return deposits.stream().mapToDouble(t -> t.getAmount().doubleValue()).sum();
+        return deposits.stream()
+                .map(t -> t.getAmount())
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)
+                .doubleValue();
     }
 
     public Double getTotalWithdrawals(Long accountId) {
         List<Transaction> withdrawals = transactionRepo.findByAccountIdAndType(accountId, TransactionType.WITHDRAWAL);
-        return withdrawals.stream().mapToDouble(t -> t.getAmount().doubleValue()).sum();
+        return withdrawals.stream()
+                .map(t -> t.getAmount())
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)
+                .doubleValue();
     }
 
     public AccountStatement getAccountStatement(Long accountId, LocalDateTime start, LocalDateTime end) {
@@ -63,9 +69,12 @@ public class TransactionQueryService {
 
         List<Transaction> transactions = transactionRepo
                 .findByAccountIdAndTimestampBetween(accountId, start, end);
-        Double openingBalance = account.getBalance()
-                - transactions.stream().mapToDouble(t -> t.getAmount().doubleValue()).sum();
-        Double closingBalance = account.getBalance();
+        java.math.BigDecimal txSum = transactions.stream()
+                .map(t -> t.getAmount())
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        java.math.BigDecimal openingBalanceBD = account.getBalance().subtract(txSum);
+        Double openingBalance = openingBalanceBD.doubleValue();
+        Double closingBalance = account.getBalance().doubleValue();
         return new AccountStatement(account, transactions, openingBalance, closingBalance);
     }
 
