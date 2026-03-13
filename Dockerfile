@@ -4,14 +4,9 @@
 FROM eclipse-temurin:17-jdk-alpine AS builder
 WORKDIR /app
 
-# Copy Maven Wrapper and project metadata first for better layer caching
-COPY .mvn/ .mvn/
-COPY mvnw pom.xml ./
+# Copy full project and build with Maven Wrapper
+COPY . .
 RUN chmod +x mvnw
-RUN ./mvnw -q -DskipTests dependency:go-offline
-
-# Build application
-COPY src ./src
 RUN ./mvnw -q -DskipTests clean package
 
 # Runtime stage
