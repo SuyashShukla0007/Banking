@@ -1,0 +1,279 @@
+{
+  "info": {
+    "_postman_id": "bank-api-full-test-collection",
+    "name": "Bank API - Full End-to-End Test",
+    "description": "Runnable Postman collection that executes the full API flow end-to-end. Uses collection variables and scripts to propagate tokens and IDs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080" },
+    { "key": "jwt_secret", "value": "changeit-changeit-changeit-changeit-changeit" },
+    { "key": "admin_token", "value": "" },
+    { "key": "user_token", "value": "" },
+    { "key": "admin_id", "value": "" },
+    { "key": "user_id", "value": "" },
+    { "key": "branch_id", "value": "" },
+    { "key": "account_id", "value": "" },
+    { "key": "account_id_2", "value": "" },
+    { "key": "approval_id", "value": "" },
+    { "key": "approval_id_2", "value": "" },
+    { "key": "account_approval_id", "value": "" },
+    { "key": "account_approval_id_2", "value": "" },
+    { "key": "transaction_id", "value": "" },
+    { "key": "admin_email", "value": "admin@example.com" },
+    { "key": "admin_password", "value": "AdminPass123" },
+    { "key": "user_email", "value": "john.doe@example.com" },
+    { "key": "user_password", "value": "UserPass123" }
+  ],
+  "item": [
+    {
+      "name": "1 - Admin Bootstrap",
+      "item": [
+        {
+          "name": "Create Admin (bootstrap with crafted JWT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bootstrap Admin\",\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/admin/create", "host": ["{{base_url}}"], "path": ["admin","create"] }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate a self-signed JWT using known secret to allow first admin creation",
+                  "const secret = pm.collectionVariables.get('jwt_secret');",
+                  "const header = { alg: 'HS256', typ: 'JWT' };",
+                  "const payload = { sub: '0', role: 'ADMIN', iat: Math.floor(Date.now()/1000), exp: Math.floor(Date.now()/1000) + 3600 };",
+                  "function base64Url(source) {",
+                  "  const encodedSource = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(source));",
+                  "  return encodedSource.replace(/=+$/, '').replace(/\\+/g, '-').replace(/\\//g, '_');",
+                  "}",
+                  "const encodedHeader = base64Url(JSON.stringify(header));",
+                  "const encodedPayload = base64Url(JSON.stringify(payload));",
+                  "const token = encodedHeader + '.' + encodedPayload;",
+                  "const signature = CryptoJS.HmacSHA256(token, secret);",
+                  "const encodedSignature = CryptoJS.enc.Base64.stringify(signature).replace(/=+$/, '').replace(/\\+/g, '-').replace(/\\//g, '_');",
+                  "const jwt = token + '.' + encodedSignature;",
+                  "pm.collectionVariables.set('admin_token', jwt);",
+                  "console.log('Bootstrap JWT set (temporary):', jwt);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 or 201', function () { pm.expect(pm.response.code).to.be.oneOf([200,201]); });",
+                  "try { const r = pm.response.json(); if (r.data && r.data.id) { pm.collectionVariables.set('admin_id', r.data.id.toString()); } } catch(e) { console.log('create admin response parse failed', e); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin Login (real token)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}" },
+            "url": { "raw": "{{base_url}}/api/auth/admin/login", "host": ["{{base_url}}"], "path": ["api","auth","admin","login"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login returns 200', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "if (json.token) { pm.collectionVariables.set('admin_token', json.token); pm.collectionVariables.set('admin_id', json.id ? json.id.toString() : pm.collectionVariables.get('admin_id')); } else if(json.data && json.data.token) { pm.collectionVariables.set('admin_token', json.data.token); pm.collectionVariables.set('admin_id', json.data.id ? json.data.id.toString() : pm.collectionVariables.get('admin_id')); }",
+                  "console.log('admin_token saved');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2 - User Registration & Approval",
+      "item": [
+        {
+          "name": "Create User Request - John Doe",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" }, { "key":"Authorization","value":"Bearer {{admin_token}}" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\"\n}" },
+            "url": { "raw": "{{base_url}}/users/create", "host": ["{{base_url}}"], "path": ["users","create"] }
+          },
+          "event": [{"listen":"test","script":{"exec":["pm.test('User create request accepted', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,201,202]);});","try { const r = pm.response.json(); if (r.data && r.data.approvalId) pm.collectionVariables.set('approval_id', r.data.approvalId.toString()); else if (r.data && r.data.id) pm.collectionVariables.set('user_id', r.data.id.toString()); } catch(e) { console.log(e); }"],"type":"text/javascript"}}]
+        },
+        {
+          "name": "Create User Request - Jane Smith",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" }, { "key":"Authorization","value":"Bearer {{admin_token}}" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Jane Smith\",\n  \"email\": \"jane.smith@example.com\",\n  \"password\": \"JanePass123\"\n}" },
+            "url": { "raw": "{{base_url}}/users/create", "host": ["{{base_url}}"], "path": ["users","create"] }
+          },
+          "event": [{"listen":"test","script":{"exec":["pm.test('User create request accepted', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,201,202]);});","try { const r = pm.response.json(); if (r.data && r.data.approvalId) pm.collectionVariables.set('approval_id_2', r.data.approvalId.toString()); } catch(e) { console.log(e); }"],"type":"text/javascript"}}]
+        },
+        {
+          "name": "Get Pending User Approvals",
+          "request": { "method": "GET", "header": [ { "key":"Authorization","value":"Bearer {{admin_token}}" } ], "url": { "raw": "{{base_url}}/api/admin/user-approvals/pending", "host": ["{{base_url}}"], "path": ["api","admin","user-approvals","pending"] } },
+          "event": [{"listen":"test","script":{"exec":["pm.test('Pending list fetched', ()=>{pm.expect(pm.response.code).to.be.oneOf([200]);});","try{ const r = pm.response.json(); if (r.data && r.data.length) { if(!pm.collectionVariables.get('approval_id')) pm.collectionVariables.set('approval_id', r.data[0].id ? r.data[0].id.toString() : ''); } }catch(e){console.log(e);}"],"type":"text/javascript"}}]
+        },
+        {
+          "name": "Approve User Registration",
+          "request": { "method": "POST", "header": [ { "key":"Authorization","value":"Bearer {{admin_token}}" } ], "url": { "raw": "{{base_url}}/api/admin/user-approvals/{{approval_id}}/approve?adminId={{admin_id}}", "host": ["{{base_url}}"], "path": ["api","admin","user-approvals","{{approval_id}}","approve"], "query": [ { "key": "adminId", "value": "{{admin_id}}" } ] } },
+          "event": [{"listen":"test","script":{"exec":["pm.test('Approve returned 200', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,201]);});","try{ const r = pm.response.json(); if (r.data && r.data.id) pm.collectionVariables.set('user_id', r.data.id.toString()); }catch(e){console.log(e);}"],"type":"text/javascript"}}]
+        },
+        {
+          "name": "Reject Second User (optional)",
+          "request": { "method": "POST", "header": [ { "key":"Authorization","value":"Bearer {{admin_token}}" } ], "url": { "raw": "{{base_url}}/api/admin/user-approvals/{{approval_id_2}}/reject?adminId={{admin_id}}&reason=Testing", "host": ["{{base_url}}"], "path": ["api","admin","user-approvals","{{approval_id_2}}","reject"], "query": [ { "key":"adminId", "value":"{{admin_id}}" }, { "key":"reason", "value":"Testing" } ] } }
+        }
+      ]
+    },
+    {
+      "name": "3 - User Authentication",
+      "item": [
+        {
+          "name": "User Login - Success",
+          "request": { "method": "POST", "header": [ { "key":"Content-Type","value":"application/json" } ], "body": { "mode":"raw", "raw":"{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\"\n}" }, "url": { "raw":"{{base_url}}/api/auth/user/login", "host":["{{base_url}}"], "path":["api","auth","user","login"] } },
+          "event": [{"listen":"test","script":{"exec":["pm.test('User login returns token', ()=>{pm.expect(pm.response.code).to.eql(200);});","var j = pm.response.json();","if (j.token) { pm.collectionVariables.set('user_token', j.token); pm.collectionVariables.set('user_id', j.id ? j.id.toString() : pm.collectionVariables.get('user_id')); } else if (j.data && j.data.token) { pm.collectionVariables.set('user_token', j.data.token); pm.collectionVariables.set('user_id', j.data.id ? j.data.id.toString() : pm.collectionVariables.get('user_id')); }"],"type":"text/javascript"}}]
+        },
+        {
+          "name": "User Login - Wrong Password",
+          "request": { "method": "POST", "header": [ { "key":"Content-Type","value":"application/json" } ], "body": { "mode":"raw", "raw":"{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"WrongPassword\"\n}" }, "url": { "raw":"{{base_url}}/api/auth/user/login", "host":["{{base_url}}"], "path":["api","auth","user","login"] } },
+          "event": [{"listen":"test","script":{"exec":["pm.test('Wrong password returns 4xx', ()=>{pm.expect(pm.response.code).to.be.within(400,499);});"],"type":"text/javascript"}}]
+        }
+      ]
+    },
+    {
+      "name": "4 - Branch Management",
+      "item": [
+        {
+          "name": "Create Branch",
+          "request": { "method": "POST", "header": [ { "key":"Content-Type","value":"application/json" }, { "key":"Authorization","value":"Bearer {{admin_token}}" } ], "body": { "mode":"raw", "raw": "{\n  \"branchName\": \"Downtown Branch\",\n  \"branchCode\": \"DT001\",\n  \"address\": \"123 Main St\",\n  \"city\": \"Metro City\",\n  \"state\": \"State\"\n}" }, "url": { "raw":"{{base_url}}/branches/create", "host":["{{base_url}}"], "path":["branches","create"] } },
+          "event": [{"listen":"test","script":{"exec":["pm.test('Branch created', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,201]);});","try{ const r = pm.response.json(); if (r.data && r.data.id) pm.collectionVariables.set('branch_id', r.data.id.toString()); else if (r.data && r.data.branchId) pm.collectionVariables.set('branch_id', r.data.branchId.toString()); }catch(e){console.log(e);}"],"type":"text/javascript"}}]
+        },
+        {
+          "name": "Get All Branches",
+          "request": { "method":"GET", "header":[ {"key":"Authorization","value":"Bearer {{admin_token}}"} ], "url": { "raw":"{{base_url}}/branches/all", "host":["{{base_url}}"], "path":["branches","all"] } },
+          "event": [{"listen":"test","script":{"exec":["pm.test('Branches list fetched', ()=>{pm.expect(pm.response.code).to.eql(200);});","try{ const r = pm.response.json(); if (r.data && r.data.length) pm.collectionVariables.set('branch_id', r.data[0].id ? r.data[0].id.toString() : pm.collectionVariables.get('branch_id')); }catch(e){console.log(e);}"],"type":"text/javascript"}}]
+        }
+      ]
+    },
+    {
+      "name": "5 - Account Creation & Approval",
+      "item": [
+        {
+          "name": "Create Account Request - Savings",
+          "request": { "method":"POST", "header":[ {"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{user_token}}"} ], "body": { "mode":"raw", "raw":"{\n  \"accountType\": \"SAVINGS\",\n  \"branchId\": {{branch_id}}\n}" }, "url": { "raw":"{{base_url}}/accounts/create/{{user_id}}", "host":["{{base_url}}"], "path":["accounts","create","{{user_id}}"] } },
+          "event": [{"listen":"test","script":{"exec":["pm.test('Account request accepted', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,201,202]);});","try{ const r = pm.response.json(); if (r.data && r.data.approvalId) pm.collectionVariables.set('account_approval_id', r.data.approvalId.toString()); }catch(e){console.log(e);}"],"type":"text/javascript"}}]
+        },
+        {
+          "name": "Create Account Request - Checking",
+          "request": { "method":"POST", "header":[ {"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{user_token}}"} ], "body": { "mode":"raw", "raw":"{\n  \"accountType\": \"CHECKING\",\n  \"branchId\": {{branch_id}}\n}" }, "url": { "raw":"{{base_url}}/accounts/create/{{user_id}}", "host":["{{base_url}}"], "path":["accounts","create","{{user_id}}"] } },
+          "event": [{"listen":"test","script":{"exec":["pm.test('Account request accepted', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,201,202]);});","try{ const r = pm.response.json(); if (r.data && r.data.approvalId) pm.collectionVariables.set('account_approval_id_2', r.data.approvalId.toString()); }catch(e){console.log(e);}"],"type":"text/javascript"}}]
+        },
+        {
+          "name": "Approve Account 1",
+          "request": { "method":"POST", "header":[ {"key":"Authorization","value":"Bearer {{admin_token}}"} ], "url": { "raw":"{{base_url}}/account-approvals/{{account_approval_id}}/approve?adminId={{admin_id}}", "host":["{{base_url}}"], "path":["account-approvals","{{account_approval_id}}","approve"], "query":[ {"key":"adminId","value":"{{admin_id}}"} ] } },
+          "event": [{"listen":"test","script":{"exec":["pm.test('Account approved', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,201]);});","try{ const r = pm.response.json(); if (r.data && r.data.id) pm.collectionVariables.set('account_id', r.data.id.toString()); }catch(e){console.log(e);}"],"type":"text/javascript"}}]
+        },
+        {
+          "name": "Approve Account 2",
+          "request": { "method":"POST", "header":[ {"key":"Authorization","value":"Bearer {{admin_token}}"} ], "url": { "raw":"{{base_url}}/account-approvals/{{account_approval_id_2}}/approve?adminId={{admin_id}}", "host":["{{base_url}}"], "path":["account-approvals","{{account_approval_id_2}}","approve"], "query":[ {"key":"adminId","value":"{{admin_id}}"} ] } },
+          "event": [{"listen":"test","script":{"exec":["pm.test('Account approved', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,201]);});","try{ const r = pm.response.json(); if (r.data && r.data.id) pm.collectionVariables.set('account_id_2', r.data.id.toString()); }catch(e){console.log(e);}"],"type":"text/javascript"}}]
+        }
+      ]
+    },
+    {
+      "name": "6 - Account Operations",
+      "item": [
+        { "name": "Get Account by ID", "request": { "method":"GET", "header":[{"key":"Authorization","value":"Bearer {{user_token}}"}], "url": { "raw":"{{base_url}}/accounts/{{account_id}}", "host":["{{base_url}}"], "path":["accounts","{{account_id}}"] } }, "event":[{"listen":"test","script":{"exec":["pm.test('Get account OK', ()=>{pm.expect(pm.response.code).to.eql(200);});"],"type":"text/javascript"}}] },
+        { "name": "Get Account Balance", "request": { "method":"GET", "header":[{"key":"Authorization","value":"Bearer {{user_token}}"}], "url": { "raw":"{{base_url}}/accounts/{{account_id}}/balance", "host":["{{base_url}}"], "path":["accounts","{{account_id}}","balance"] } }, "event":[{"listen":"test","script":{"exec":["pm.test('Balance fetched', ()=>{pm.expect(pm.response.code).to.eql(200);});"],"type":"text/javascript"}}] },
+        { "name": "Get User Accounts", "request": { "method":"GET", "header":[{"key":"Authorization","value":"Bearer {{user_token}}"}], "url": { "raw":"{{base_url}}/accounts/user/{{user_id}}", "host":["{{base_url}}"], "path":["accounts","user","{{user_id}}"] } }, "event":[{"listen":"test","script":{"exec":["pm.test('User accounts fetched', ()=>{pm.expect(pm.response.code).to.eql(200);});"],"type":"text/javascript"}}] }
+      ]
+    },
+    {
+      "name": "7 - Transactions",
+      "item": [
+        {
+          "name": "Deposit to Account 1",
+          "request": { "method":"POST", "header":[ {"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{user_token}}"} ], "body": { "mode":"raw", "raw":"{\n  \"accountId\": {{account_id}},\n  \"amount\": 1000\n}" }, "url": { "raw":"{{base_url}}/transactions/deposit", "host":["{{base_url}}"], "path":["transactions","deposit"] } },
+          "event": [{"listen":"test","script":{"exec":["pm.test('Deposit OK', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,201]);});"],"type":"text/javascript"}}]
+        },
+        {
+          "name": "Withdraw from Account 1",
+          "request": { "method":"POST", "header":[ {"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{user_token}}"} ], "body": { "mode":"raw", "raw":"{\n  \"accountId\": {{account_id}},\n  \"amount\": 200\n}" }, "url": { "raw":"{{base_url}}/transactions/withdraw", "host":["{{base_url}}"], "path":["transactions","withdraw"] } },
+          "event": [{"listen":"test","script":{"exec":["pm.test('Withdraw OK', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,201]);});"],"type":"text/javascript"}}]
+        },
+        {
+          "name": "Deposit to Account 2",
+          "request": { "method":"POST", "header":[ {"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{user_token}}"} ], "body": { "mode":"raw", "raw":"{\n  \"accountId\": {{account_id_2}},\n  \"amount\": 500\n}" }, "url": { "raw":"{{base_url}}/transactions/deposit", "host":["{{base_url}}"], "path":["transactions","deposit"] } },
+          "event": [{"listen":"test","script":{"exec":["pm.test('Deposit OK', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,201]);});"],"type":"text/javascript"}}]
+        },
+        {
+          "name": "Transfer from Account 1 to Account 2",
+          "request": { "method":"POST", "header":[ {"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{user_token}}"} ], "body": { "mode":"raw", "raw":"{\n  \"fromAccountId\": {{account_id}},\n  \"toAccountId\": {{account_id_2}},\n  \"amount\": 100\n}" }, "url": { "raw":"{{base_url}}/transactions/transfer", "host":["{{base_url}}"], "path":["transactions","transfer"] } },
+          "event": [{"listen":"test","script":{"exec":["pm.test('Transfer OK', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,201]);});","try{ const r = pm.response.json(); if(r.transactionId) pm.collectionVariables.set('transaction_id', r.transactionId.toString()); else if(r.data && r.data.transactionId) pm.collectionVariables.set('transaction_id', r.data.transactionId.toString()); }catch(e){console.log(e);}"],"type":"text/javascript"}}]
+        },
+        { "name": "Get Transaction History (Account 1)", "request": { "method":"GET", "header":[{"key":"Authorization","value":"Bearer {{user_token}}"}], "url": { "raw":"{{base_url}}/transactions/{{account_id}}/history?page=0&size=20", "host":["{{base_url}}"], "path":["transactions","{{account_id}}","history"], "query":[ {"key":"page","value":"0"},{"key":"size","value":"20"} ] } }, "event":[{"listen":"test","script":{"exec":["pm.test('History OK', ()=>{pm.expect(pm.response.code).to.eql(200);});"],"type":"text/javascript"}}] },
+        { "name": "Get Transaction by ID", "request": { "method":"GET", "header":[{"key":"Authorization","value":"Bearer {{user_token}}"}], "url": { "raw":"{{base_url}}/transactions/{{transaction_id}}", "host":["{{base_url}}"], "path":["transactions","{{transaction_id}}"] } }, "event":[{"listen":"test","script":{"exec":["pm.test('Get transaction OK', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,201]);});"],"type":"text/javascript"}}] }
+      ]
+    },
+    {
+      "name": "8 - User Profile Management",
+      "item": [
+        { "name": "Update Profile", "request": { "method":"PUT", "header":[{"key":"Authorization","value":"Bearer {{user_token}}"}], "url": { "raw":"{{base_url}}/users/{{user_id}}/profile?name=John%20Updated&email=john.updated@example.com", "host":["{{base_url}}"], "path":["users","{{user_id}}","profile"], "query":[ {"key":"name","value":"John Updated"},{"key":"email","value":"john.updated@example.com"} ] } }, "event":[{"listen":"test","script":{"exec":["pm.test('Profile updated', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,204]);});","pm.collectionVariables.set('user_email','john.updated@example.com');"],"type":"text/javascript"}}] },
+        { "name": "Change Password", "request": { "method":"POST", "header":[{"key":"Authorization","value":"Bearer {{user_token}}"}], "url": { "raw":"{{base_url}}/users/{{user_id}}/change-password?oldPassword={{user_password}}&newPassword=newpassword456", "host":["{{base_url}}"], "path":["users","{{user_id}}","change-password"], "query":[ {"key":"oldPassword","value":"{{user_password}}"},{"key":"newPassword","value":"newpassword456"} ] } }, "event":[{"listen":"test","script":{"exec":["pm.test('Password changed', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,204]);});","pm.collectionVariables.set('user_password','newpassword456');"],"type":"text/javascript"}}] },
+        { "name": "Login With New Password", "request": { "method":"POST", "header":[{"key":"Content-Type","value":"application/json"}], "body": { "mode":"raw","raw":"{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\"\n}" }, "url": { "raw":"{{base_url}}/api/auth/user/login", "host":["{{base_url}}"], "path":["api","auth","user","login"] } }, "event":[{"listen":"test","script":{"exec":["pm.test('Login after password change OK', ()=>{pm.expect(pm.response.code).to.eql(200);});","var j = pm.response.json(); if(j.token) pm.collectionVariables.set('user_token', j.token);"],"type":"text/javascript"}}] }
+      ]
+    },
+    {
+      "name": "9 - Admin User Management",
+      "item": [
+        { "name": "Get All Users (admin)", "request": { "method":"GET","header":[{"key":"Authorization","value":"Bearer {{admin_token}}"}], "url": { "raw":"{{base_url}}/api/admin/users/all?page=0&size=20", "host":["{{base_url}}"], "path":["api","admin","users","all"], "query":[{"key":"page","value":"0"},{"key":"size","value":"20"}] } }, "event":[{"listen":"test","script":{"exec":["pm.test('Users list OK', ()=>{pm.expect(pm.response.code).to.eql(200);});"],"type":"text/javascript"}}] },
+        { "name": "Suspend User", "request": { "method":"POST","header":[{"key":"Authorization","value":"Bearer {{admin_token}}"}], "url": { "raw":"{{base_url}}/api/admin/users/{{user_id}}/suspend", "host":["{{base_url}}"], "path":["api","admin","users","{{user_id}}","suspend"] } }, "event":[{"listen":"test","script":{"exec":["pm.test('Suspend OK', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,204]);});"],"type":"text/javascript"}}] },
+        { "name": "Activate User", "request": { "method":"POST","header":[{"key":"Authorization","value":"Bearer {{admin_token}}"}], "url": { "raw":"{{base_url}}/api/admin/users/{{user_id}}/activate", "host":["{{base_url}}"], "path":["api","admin","users","{{user_id}}","activate"] } }, "event":[{"listen":"test","script":{"exec":["pm.test('Activate OK', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,204]);});"],"type":"text/javascript"}}] }
+      ]
+    },
+    {
+      "name": "10 - Account Status Management",
+      "item": [
+        { "name": "Suspend Account", "request": { "method":"PUT","header":[{"key":"Authorization","value":"Bearer {{admin_token}}"}], "url": { "raw":"{{base_url}}/account-status/{{account_id}}/suspend?adminId={{admin_id}}", "host":["{{base_url}}"], "path":["account-status","{{account_id}}","suspend"], "query":[{"key":"adminId","value":"{{admin_id}}"}] } }, "event":[{"listen":"test","script":{"exec":["pm.test('Suspend account OK', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,204]);});"],"type":"text/javascript"}}] },
+        { "name": "Activate Account", "request": { "method":"PUT","header":[{"key":"Authorization","value":"Bearer {{admin_token}}"}], "url": { "raw":"{{base_url}}/account-status/{{account_id}}/activate?adminId={{admin_id}}", "host":["{{base_url}}"], "path":["account-status","{{account_id}}","activate"], "query":[{"key":"adminId","value":"{{admin_id}}"}] } }, "event":[{"listen":"test","script":{"exec":["pm.test('Activate account OK', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,204]);});"],"type":"text/javascript"}}] },
+        { "name": "Close Account", "request": { "method":"PUT","header":[{"key":"Authorization","value":"Bearer {{admin_token}}"}], "url": { "raw":"{{base_url}}/account-status/{{account_id_2}}/close?adminId={{admin_id}}", "host":["{{base_url}}"], "path":["account-status","{{account_id_2}}","close"], "query":[{"key":"adminId","value":"{{admin_id}}"}] } }, "event":[{"listen":"test","script":{"exec":["pm.test('Close account OK', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,204]);});"],"type":"text/javascript"}}] }
+      ]
+    },
+    {
+      "name": "11 - Admin Reports & Profile",
+      "item": [
+        { "name": "Get Admin by ID", "request": { "method":"GET","header":[{"key":"Authorization","value":"Bearer {{admin_token}}"}], "url": { "raw":"{{base_url}}/admin/{{admin_id}}", "host":["{{base_url}}"], "path":["admin","{{admin_id}}"] } }, "event":[{"listen":"test","script":{"exec":["pm.test('Get admin OK', ()=>{pm.expect(pm.response.code).to.eql(200);});"],"type":"text/javascript"}}] },
+        { "name": "Get System Report", "request": { "method":"GET","header":[{"key":"Authorization","value":"Bearer {{admin_token}}"}], "url": { "raw":"{{base_url}}/admin/report", "host":["{{base_url}}"], "path":["admin","report"] } }, "event":[{"listen":"test","script":{"exec":["pm.test('Report OK', ()=>{pm.expect(pm.response.code).to.eql(200);});"],"type":"text/javascript"}}] }
+      ]
+    },
+    {
+      "name": "12 - Approvals & Cleanup",
+      "item": [
+        { "name": "Get User Approval by ID", "request": { "method":"GET","header":[{"key":"Authorization","value":"Bearer {{admin_token}}"}], "url": { "raw":"{{base_url}}/api/admin/user-approvals/{{approval_id}}", "host":["{{base_url}}"], "path":["api","admin","user-approvals","{{approval_id}}"] } }, "event":[{"listen":"test","script":{"exec":["pm.test('Approval fetched', ()=>{pm.expect(pm.response.code).to.eql(200);});"],"type":"text/javascript"}}] },
+        { "name": "Get Account Approval by ID", "request": { "method":"GET","header":[{"key":"Authorization","value":"Bearer {{admin_token}}"}], "url": { "raw":"{{base_url}}/account-approvals/{{account_approval_id}}", "host":["{{base_url}}"], "path":["account-approvals","{{account_approval_id}}"] } }, "event":[{"listen":"test","script":{"exec":["pm.test('Account approval fetched', ()=>{pm.expect(pm.response.code).to.eql(200);});"],"type":"text/javascript"}}] },
+        { "name": "Deactivate User (cleanup)", "request": { "method":"POST","header":[{"key":"Authorization","value":"Bearer {{user_token}}"}], "url": { "raw":"{{base_url}}/users/{{user_id}}/deactivate", "host":["{{base_url}}"], "path":["users","{{user_id}}","deactivate"] } }, "event":[{"listen":"test","script":{"exec":["pm.test('User deactivated', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,204]);});"],"type":"text/javascript"}}] },
+        { "name": "Delete User (cleanup)", "request": { "method":"DELETE","header":[{"key":"Authorization","value":"Bearer {{admin_token}}"}], "url": { "raw":"{{base_url}}/users/{{user_id}}", "host":["{{base_url}}"], "path":["users","{{user_id}}"] } }, "event":[{"listen":"test","script":{"exec":["pm.test('User deleted', ()=>{pm.expect(pm.response.code).to.be.oneOf([200,204]);});"],"type":"text/javascript"}}] }
+      ]
+    }
+  ]
+}
