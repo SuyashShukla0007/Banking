@@ -49,7 +49,7 @@ class ConfigConfiguration {
         CorsConfiguration configuration = new CorsConfiguration();
         // Allow development origin; adjust or load from properties for production
         configuration.setAllowedOrigins(
-                Arrays.asList("http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"));
+                Arrays.asList("https://banking-front-qmr9.vercel.app/", "http://localhost:5173", "http://127.0.0.1:5173"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
         configuration.setExposedHeaders(Arrays.asList("Authorization"));
